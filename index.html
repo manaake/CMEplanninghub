@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#15181C">
 <title>EM Conference & Status Run Planner — Auckland</title>
 <style>
 :root {
@@ -14,7 +17,9 @@
   --radius:12px; --shadow:0 2px 12px rgba(0,0,0,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--grey-50);color:var(--grey-800);min-height:100vh;font-size:14px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--grey-50);color:var(--grey-800);min-height:100vh;font-size:14px;-webkit-text-size-adjust:100%}
+button,a,[onclick]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input,select,textarea{touch-action:manipulation}
 
 /* ── HEADER ── */
 header{background:var(--black);color:var(--white);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.4)}
@@ -272,7 +277,120 @@ body.no-status .status-only{display:none!important}
 .cal-modal-links a,.cal-modal-links button{text-align:center}
 .cal-modal-note{font-size:11px;color:var(--grey-500);background:var(--grey-50);border-radius:5px;padding:7px 10px;margin-top:10px;line-height:1.5}
 
-@media(max-width:900px){.layout{flex-direction:column;height:auto}.sidebar{width:100%;max-height:none;border-left:none;border-top:1px solid var(--grey-200)}.quote-layout{grid-template-columns:1fr}}
+/* ── RESPONSIVE BASE (≤900px tablets / landscape) ── */
+@media(max-width:900px){
+  .layout{flex-direction:column;height:auto;overflow:visible}
+  .sidebar{width:100%;max-height:none;border-left:none;border-top:1px solid var(--grey-200)}
+  .quote-layout{grid-template-columns:1fr}
+  .cards-grid{grid-template-columns:1fr}
+}
+
+/* ── MOBILE (≤600px — iPhone 12 and similar) ── */
+@media(max-width:600px){
+  /* Header: stack into two rows */
+  header{height:auto;padding:8px 12px;flex-direction:column;align-items:stretch;gap:6px}
+  .logo{font-size:13px;gap:6px}
+  .header-controls{display:flex;width:100%;flex-wrap:wrap;gap:6px;align-items:center}
+  .mode-toggle{flex:1;min-width:0}
+  .mode-btn{padding:9px 6px;font-size:11px;flex:1;min-height:36px}
+  .status-toggle-btn{padding:8px 10px;font-size:11px;min-height:36px}
+  .budget-wrap{font-size:12px;gap:5px;flex-shrink:0}
+  .budget-slider{display:none}
+  .budget-input-field{width:68px;padding:6px 6px;font-size:12px}
+
+  /* Layout: let it scroll naturally */
+  .layout{height:auto;overflow:visible}
+  .main-panel{padding:10px 10px}
+  .sidebar{padding:12px 10px}
+
+  /* Cards: single column, no hover lift (touch devices) */
+  .cards-grid{grid-template-columns:1fr;gap:10px}
+  .conf-card:hover{transform:none;box-shadow:var(--shadow)}
+  .card-header{padding:10px 12px}
+  .card-title{font-size:13px}
+  .card-body{padding:10px 12px}
+  .card-meta{gap:8px}
+  .meta-item{font-size:11px}
+
+  /* Filters: stack vertically */
+  .filter-bar{flex-direction:column;gap:8px}
+  .filter-bar select,.filter-bar input[type=text]{width:100%;font-size:14px;padding:10px 12px}
+  .filter-check{font-size:13px}
+  .filter-check input{width:18px;height:18px}
+
+  /* Buttons: larger tap targets (≥44px height) */
+  .btn{padding:11px 14px;font-size:13px;min-height:44px}
+  .btn-sm{padding:9px 12px;font-size:12px;min-height:40px}
+  .card-actions{gap:8px}
+  .card-actions .btn{flex:1;justify-content:center}
+
+  /* Flight links: bigger tap area */
+  .flight-links{gap:6px}
+  .flight-link{padding:7px 10px;font-size:11px;border-radius:7px}
+
+  /* Adjacent badges */
+  .adj-badge{padding:5px 10px;font-size:12px}
+
+  /* Trip remove button */
+  .trip-item-remove{font-size:20px;padding:4px 6px;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center}
+
+  /* DSC grid: single column */
+  .dsc-grid{grid-template-columns:1fr}
+
+  /* SC comparison: single column */
+  .sc-comparison{grid-template-columns:1fr}
+
+  /* SC rates table: tighter columns */
+  .sc-rates-row{grid-template-columns:2fr 1fr 1fr;font-size:11px;padding:7px 8px}
+
+  /* Quote form */
+  .form-group select,.form-group input{font-size:15px;padding:11px 12px}
+  .btn-get-quote{padding:14px;font-size:15px;min-height:48px}
+
+  /* Accommodation */
+  .cost-inputs{flex-direction:column;align-items:stretch}
+  .cost-inputs label{flex-direction:row;justify-content:space-between}
+  .cost-inputs input{width:100%;font-size:15px;padding:8px 10px}
+  .btn-add-to-budget,.btn-add-flight{padding:13px;font-size:14px;min-height:48px}
+  .hotel-link{padding:7px 12px;font-size:12px}
+
+  /* Sidebar budget readability */
+  .sb-budget-amount{font-size:22px}
+  .sb-total-row{font-size:13px}
+  .sb-total-row.bold{font-size:14px}
+
+  /* Calendar: narrower label col */
+  .cal-wrapper{min-width:640px}
+  .cal-head-spacer{width:110px;min-width:110px}
+  .cal-row-label{width:110px;min-width:110px;padding:4px 6px}
+  .cal-label-name{font-size:10px}
+  .cal-label-city{font-size:9px}
+  .cal-controls{flex-direction:column;align-items:flex-start;gap:8px}
+  .cal-legend{gap:10px}
+
+  /* Modal: full-width on mobile */
+  .cal-modal-box{width:95%;padding:18px 16px 14px}
+  .cal-modal-title{font-size:14px}
+  .cal-modal-links a,.cal-modal-links button{padding:12px;font-size:13px;min-height:44px}
+
+  /* Promo banner */
+  .promo-banner{font-size:12px;padding:10px 12px}
+  .promo-icon{display:none}
+
+  /* Badges readability */
+  .est-badge,.intl-badge{font-size:10px;padding:2px 7px}
+  .cat-badge{font-size:10px;padding:3px 7px}
+  /* ─ Prevent iOS zoom on ALL inputs/selects (must be ≥16px) ─ */
+  input,select,textarea{font-size:16px!important}
+  .budget-input-field{font-size:13px!important;width:68px}
+}
+
+/* ── VERY SMALL (≤360px) ── */
+@media(max-width:360px){
+  .mode-btn{font-size:10px;padding:8px 4px}
+  .status-toggle-btn{font-size:10px;padding:7px 8px}
+  .budget-input-field{width:58px}
+}
 </style>
 </head>
 <body>
