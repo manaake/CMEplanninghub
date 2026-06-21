@@ -1,0 +1,2337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EM Conference & Status Run Planner — Auckland</title>
+<style>
+:root {
+  --black:#15181C; --teal:#00A3AD; --teal-dark:#007A82; --teal-light:#E0F7F8;
+  --white:#FFFFFF; --grey-50:#F7F8FA; --grey-100:#EFF0F2; --grey-200:#D1D5DB;
+  --grey-400:#9CA3AF; --grey-600:#4B5563; --grey-800:#1F2937;
+  --gold:#F59E0B; --gold-light:#FEF3C7; --green:#10B981; --green-light:#D1FAE5;
+  --red:#EF4444; --red-light:#FEE2E2; --warning-bg:#FFFBEB;
+  --radius:12px; --shadow:0 2px 12px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--grey-50);color:var(--grey-800);min-height:100vh;font-size:14px}
+
+/* ── HEADER ── */
+header{background:var(--black);color:var(--white);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;white-space:nowrap}
+.logo-teal{color:var(--teal)}
+.header-controls{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.mode-toggle{display:flex;background:rgba(255,255,255,.1);border-radius:8px;padding:3px;gap:2px}
+.mode-btn{background:none;border:none;color:rgba(255,255,255,.6);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.mode-btn.active{background:var(--teal);color:var(--white)}
+.budget-wrap{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.8);font-size:13px}
+.budget-input-field{width:90px;padding:4px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:var(--white);font-size:13px;font-weight:700;text-align:right}
+.budget-slider{width:100px;accent-color:var(--teal)}
+
+/* ── LAYOUT ── */
+.layout{display:flex;gap:0;height:calc(100vh - 60px);overflow:hidden}
+.main-panel{flex:1;overflow-y:auto;padding:20px}
+.sidebar{width:320px;min-width:300px;background:var(--white);border-left:1px solid var(--grey-200);overflow-y:auto;display:flex;flex-direction:column;padding:16px}
+
+/* ── PROMO BANNER ── */
+.promo-banner{background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:var(--white);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:10px}
+.promo-banner .promo-icon{font-size:20px}
+.promo-closed{background:linear-gradient(135deg,#92400e,#b45309);color:var(--white);border-radius:var(--radius);padding:10px 16px;margin-bottom:12px;font-size:12px}
+/* ── DSC PROMO CALENDAR ── */
+.dsc-panel{background:#fffbeb;border:2px solid #f59e0b;border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+.dsc-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none}
+.dsc-panel-header:hover{background:#fef3c7}
+.dsc-title{font-size:13px;font-weight:700;color:#92400e;display:flex;align-items:center;gap:8px}
+.dsc-bolt{font-size:16px}
+.dsc-subtitle{font-size:11px;color:#b45309;font-weight:400}
+.dsc-chevron{color:#92400e;font-size:12px;transition:transform 0.2s}
+.dsc-body{padding:0 14px 12px 14px;font-size:12px;color:#44403c}
+.dsc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.dsc-col h4{font-size:11px;font-weight:700;color:#92400e;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.dsc-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #fde68a}
+.dsc-row:last-child{border-bottom:none}
+.dsc-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap}
+.dsc-tag.past{background:#e5e7eb;color:#6b7280}
+.dsc-tag.next{background:#d1fae5;color:#065f46}
+.dsc-tag.est{background:#fde68a;color:#92400e}
+.dsc-rule{background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:7px 10px;margin-top:8px;font-size:11px;line-height:1.6}
+/* ── ESTIMATED CONFERENCE BADGE ── */
+.est-badge{font-size:9px;font-weight:700;background:#fde68a;color:#92400e;padding:1px 6px;border-radius:8px;margin-left:4px;vertical-align:middle}
+.intl-badge{font-size:9px;font-weight:700;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:8px;margin-left:4px;vertical-align:middle}
+/* ── YEAR FILTER ── */
+.year-badge{font-size:10px;font-weight:700;background:var(--teal-light);color:var(--teal-dark);padding:2px 7px;border-radius:8px;margin-bottom:6px;display:inline-block}
+
+/* ── FILTERS ── */
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-bar select,.filter-bar input[type=text]{padding:7px 10px;border:1px solid var(--grey-200);border-radius:8px;font-size:13px;background:var(--white);color:var(--grey-800);outline:none}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--teal)}
+.filter-check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--grey-600);cursor:pointer;white-space:nowrap}
+.filter-check input{accent-color:var(--teal)}
+.results-count{font-size:12px;color:var(--grey-400);white-space:nowrap}
+
+/* ── CONFERENCE CARDS ── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.conf-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--grey-100);overflow:hidden;transition:transform .15s,box-shadow .15s}
+.conf-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.conf-card.holiday-card{border-left:4px solid var(--gold)}
+.card-header{background:var(--black);padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start}
+.card-title{color:var(--white);font-weight:700;font-size:14px;line-height:1.3;flex:1}
+.cat-badge{font-size:10px;padding:3px 8px;border-radius:20px;background:var(--teal);color:var(--white);white-space:nowrap;margin-left:8px;font-weight:600;flex-shrink:0}
+.card-body{padding:12px 14px}
+.card-meta{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.meta-item{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--grey-600)}
+.meta-item .icon{font-size:13px}
+.holiday-warn{background:var(--warning-bg);border:1px solid #fcd34d;border-radius:8px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:#92400e;display:flex;gap:6px}
+.flight-info{background:var(--grey-50);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px}
+.flight-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.flight-label{color:var(--grey-600)}
+.sc-value{font-weight:700;color:var(--teal-dark)}
+.adjacent-section{margin-bottom:8px}
+.adj-label{font-size:11px;color:var(--grey-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.adj-badge{display:inline-flex;align-items:center;gap:4px;background:var(--green-light);color:#065f46;font-size:11px;padding:3px 8px;border-radius:20px;margin-right:4px;margin-bottom:4px;cursor:pointer;text-decoration:none}
+.card-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn{padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.btn-primary{background:var(--teal);color:var(--white)}
+.btn-primary:hover{background:var(--teal-dark)}
+.btn-outline{background:none;border:1px solid var(--grey-200);color:var(--grey-600)}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal)}
+.btn-sm{padding:4px 9px;font-size:11px}
+.flight-links{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.flight-link{font-size:10px;padding:3px 8px;border-radius:5px;text-decoration:none;font-weight:600;display:inline-block}
+.fl-webjet{background:#e3f2fd;color:#0d47a1}
+.fl-skyscanner{background:#e0ffe0;color:#1a7a1a}
+.fl-google{background:#fce4ec;color:#880e4f}
+.fl-airnz{background:#000;color:#00A3AD}
+.fl-qantas{background:#fef3c7;color:#b45309}
+/* ── NZ CME BUSINESS CLASS RULE ── */
+.cme-ok{display:inline-flex;align-items:center;gap:4px;background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:4px}
+.cme-warn{display:inline-flex;align-items:center;gap:4px;background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:4px}
+.cme-alert-box{border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:12px;line-height:1.5}
+.cme-alert-box.ok{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
+.cme-alert-box.warn{background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+
+/* ── QUOTE MODE ── */
+#quote-mode{display:none}
+.quote-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.quote-panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.quote-panel h2{font-size:17px;font-weight:700;margin-bottom:16px;color:var(--black);display:flex;align-items:center;gap:8px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--grey-600);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.form-group select,.form-group input{width:100%;padding:9px 12px;border:1.5px solid var(--grey-200);border-radius:8px;font-size:13px;outline:none;background:var(--white)}
+.form-group select:focus,.form-group input:focus{border-color:var(--teal)}
+.fare-desc{font-size:11px;color:var(--grey-400);margin-top:4px}
+.sc-rates-table{margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid var(--grey-200)}
+.sc-rates-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:6px 10px;font-size:11px;border-bottom:1px solid var(--grey-100)}
+.sc-rates-row:last-child{border-bottom:none}
+.sc-rates-row:first-child{background:var(--grey-50);font-weight:700;font-size:11px;color:var(--grey-600)}
+.btn-get-quote{width:100%;padding:11px;background:var(--teal);color:var(--white);border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-get-quote:hover{background:var(--teal-dark)}
+
+/* ── QUOTE RESULT ── */
+.quote-result-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;display:none}
+.quote-result-card.visible{display:block}
+.qr-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.qr-title{font-size:15px;font-weight:700;color:var(--black)}
+.qr-cost{font-size:22px;font-weight:800;color:var(--teal-dark)}
+.qr-cost-note{font-size:11px;color:var(--grey-400);margin-top:2px}
+.sc-comparison{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.sc-col{background:var(--grey-50);border-radius:10px;padding:12px;text-align:center}
+.sc-col.qantas-col{border:2px solid #F59E0B}
+.sc-col.airnz-col{border:2px solid #15616D}
+.sc-airline{font-size:11px;font-weight:700;color:var(--grey-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.sc-number{font-size:24px;font-weight:800;margin-bottom:6px}
+.sc-col.qantas-col .sc-number{color:var(--gold)}
+.sc-col.airnz-col .sc-number{color:var(--teal-dark)}
+.progress-bar{height:6px;background:var(--grey-200);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s}
+.qantas-col .progress-fill{background:var(--gold)}
+.airnz-col .progress-fill{background:var(--teal)}
+.progress-text{font-size:11px;color:var(--grey-500)}
+.gold-note{font-size:12px;color:var(--green);font-weight:700;margin-top:4px}
+
+/* ── ACCOMMODATION SECTION ── */
+.accom-section{border-top:1px solid var(--grey-100);margin-top:14px;padding-top:14px}
+.accom-toggle-btn{background:none;border:1.5px dashed var(--grey-300);border-radius:8px;padding:9px 14px;width:100%;cursor:pointer;color:var(--grey-600);font-size:13px;font-weight:600;transition:all .2s}
+.accom-toggle-btn:hover{border-color:var(--teal);color:var(--teal)}
+.accom-content{display:none;margin-top:12px}
+.accom-content.open{display:block}
+.conf-rate-banner{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:var(--white);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;display:inline-block;margin-bottom:8px}
+.hotel-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--grey-50);border-radius:8px;margin-bottom:6px;font-size:12px}
+.hotel-name{font-weight:600;color:var(--grey-800)}
+.hotel-link{font-size:11px;color:var(--teal);text-decoration:none;font-weight:600;padding:3px 8px;background:var(--teal-light);border-radius:5px}
+.hotel-link:hover{background:var(--teal);color:var(--white)}
+.accom-cost-calc{background:var(--grey-50);border-radius:8px;padding:12px;margin-top:10px}
+.accom-cost-calc h4{font-size:12px;font-weight:700;color:var(--grey-700);margin-bottom:8px}
+.cost-inputs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.cost-inputs label{font-size:12px;color:var(--grey-600);display:flex;align-items:center;gap:5px}
+.cost-inputs input{width:80px;padding:5px 8px;border:1px solid var(--grey-200);border-radius:6px;font-size:13px}
+.accom-total-display{font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:8px}
+.btn-add-to-budget{width:100%;padding:9px;background:var(--green);color:var(--white);border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;margin-top:6px}
+.btn-add-to-budget:hover{background:#059669}
+.btn-add-flight{width:100%;padding:9px;background:var(--teal);color:var(--white);border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px}
+
+/* ── SIDEBAR ── */
+.sidebar h2{font-size:15px;font-weight:700;margin-bottom:12px;color:var(--black)}
+.sidebar-budget{background:linear-gradient(135deg,var(--black),#2d3748);border-radius:10px;padding:14px;color:var(--white);margin-bottom:14px}
+.sb-budget-label{font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px}
+.sb-budget-amount{font-size:26px;font-weight:800;color:var(--teal);margin:2px 0 8px}
+.sb-budget-bar-wrap{height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.sb-budget-bar-fill{height:100%;background:var(--teal);border-radius:4px;transition:width .4s}
+.sb-budget-bar-fill.over{background:var(--red)}
+.sb-budget-remaining{font-size:12px;color:rgba(255,255,255,.7);display:flex;justify-content:space-between}
+.sb-budget-remaining.over{color:#fca5a5}
+
+.trip-empty{text-align:center;padding:30px 10px;color:var(--grey-400)}
+.trip-empty .empty-icon{font-size:36px;margin-bottom:8px}
+.trip-empty p{font-size:12px}
+
+.trip-item{background:var(--grey-50);border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--grey-100);position:relative}
+.trip-item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.trip-item-name{font-size:12px;font-weight:700;color:var(--grey-800);flex:1;padding-right:8px}
+.trip-item-remove{background:none;border:none;cursor:pointer;color:var(--grey-400);font-size:16px;line-height:1;padding:0}
+.trip-item-remove:hover{color:var(--red)}
+.trip-item-detail{font-size:11px;color:var(--grey-500);margin-bottom:2px}
+.trip-item-costs{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.trip-cost-pill{background:var(--white);border:1px solid var(--grey-200);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--grey-700);font-weight:600}
+.trip-cost-pill.sc{background:var(--gold-light);border-color:#fcd34d;color:#92400e}
+.trip-cost-pill.over{background:var(--red-light);border-color:#fca5a5;color:#991b1b}
+
+.sb-divider{height:1px;background:var(--grey-200);margin:12px 0}
+.sb-totals{margin-bottom:12px}
+.sb-total-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;color:var(--grey-600)}
+.sb-total-row.bold{font-weight:700;color:var(--grey-800);font-size:13px}
+.sb-total-row.over-budget{color:var(--red);font-weight:700}
+
+.status-progress{margin-top:12px}
+.status-progress h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--grey-400);margin-bottom:8px}
+.sp-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sp-label{font-size:11px;color:var(--grey-600);width:70px;flex-shrink:0}
+.sp-bar-wrap{flex:1;height:8px;background:var(--grey-200);border-radius:4px;overflow:hidden}
+.sp-bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.sp-bar-fill.qf{background:var(--gold)}
+.sp-bar-fill.anz{background:var(--teal)}
+.sp-pct{font-size:11px;font-weight:700;width:34px;text-align:right}
+.gold-achieved{background:var(--green-light);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;color:#065f46;text-align:center;margin-top:6px}
+.sidebar-note{font-size:11px;color:var(--grey-400);margin-top:10px;line-height:1.5}
+
+/* ── UTILS ── */
+.hidden{display:none!important}
+.tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+.tag-em{background:#e0e7ff;color:#3730a3}
+.tag-trauma{background:#fce7f3;color:#9d174d}
+.tag-icu{background:#f0fdf4;color:#14532d}
+.tag-rural{background:#fef9c3;color:#713f12}
+.tag-rad{background:#f0f9ff;color:#0c4a6e}
+.tag-us{background:#eff6ff;color:#1e3a8a}
+.tag-pem{background:#fdf4ff;color:#6b21a8}
+.tag-mgmt{background:#f0fdf4;color:#065f46}
+.tag-acem{background:#fee2e2;color:#991b1b}
+
+/* ── STATUS RUN TOGGLE ── */
+body.no-status .status-only{display:none!important}
+.status-toggle-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:var(--white);padding:5px 13px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.2px;transition:all .2s;white-space:nowrap}
+.status-toggle-btn:hover{background:rgba(255,255,255,.25)}
+.status-toggle-btn.cme-only{background:rgba(255,255,255,.06);color:rgba(255,255,255,.45);border-color:rgba(255,255,255,.15)}
+.virtual-info{background:#e0f2fe;border:1px solid #7dd3fc;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:#0c4a6e;display:flex;align-items:center;gap:6px}
+
+/* ── CALENDAR VIEW ── */
+.cal-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.cal-controls select{font-size:12px;padding:3px 6px;border:1px solid var(--grey-300);border-radius:5px;background:var(--white);color:var(--grey-700);cursor:pointer}
+.cal-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--grey-600)}
+.leg-swatch{display:inline-block;width:14px;height:10px;border-radius:2px;flex-shrink:0}
+.cal-outer{overflow-x:auto;border:1px solid var(--grey-200);border-radius:var(--radius);background:var(--white)}
+.cal-wrapper{min-width:800px}
+.cal-head{display:flex;background:var(--grey-50);border-bottom:2px solid var(--grey-200)}
+.cal-head-spacer{width:195px;min-width:195px;flex-shrink:0;border-right:1px solid var(--grey-200)}
+.cal-month-header{flex:1;position:relative;height:26px}
+.cal-month-cell{position:absolute;font-size:10px;font-weight:700;color:var(--grey-500);text-align:center;top:6px;text-transform:uppercase;letter-spacing:.4px;pointer-events:none}
+.cal-month-div{position:absolute;top:0;bottom:0;width:1px;background:var(--grey-200);pointer-events:none}
+.cal-row{display:flex;align-items:center;border-bottom:1px solid var(--grey-100);min-height:54px;transition:background .1s}
+.cal-row:last-child{border-bottom:none}
+.cal-row:hover{background:rgba(0,120,130,.03)}
+.cal-row.in-trip{background:rgba(168,85,247,.04)}
+.cal-row-label{width:195px;min-width:195px;flex-shrink:0;padding:6px 10px;border-right:1px solid var(--grey-200)}
+.cal-label-name{font-size:11px;font-weight:700;color:var(--grey-700);line-height:1.3;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-label-city{font-size:10px;color:var(--grey-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-label-badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700;margin-top:2px;background:#e0f2fe;color:#0c4a6e}
+.cal-track{flex:1;position:relative;height:54px}
+.cal-ev{position:absolute;border-radius:3px;font-size:9px;font-weight:700;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 4px;transition:filter .15s;white-space:nowrap}
+.cal-ev:hover{filter:brightness(1.12);box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:5}
+.cal-flight-out,.cal-flight-ret{background:#f97316;color:#fff;height:22px;top:7px;min-width:14px}
+.cal-conf{background:var(--teal);color:#fff;height:22px;top:7px}
+.cal-accom{background:#a855f7;color:#fff;height:11px;top:33px;opacity:.82;font-size:8px}
+.cal-empty{padding:40px;text-align:center;color:var(--grey-400);font-size:13px}
+.cal-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:none;align-items:center;justify-content:center}
+.cal-modal-box{background:var(--white);border-radius:var(--radius);padding:22px 22px 18px;max-width:390px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,.28);position:relative}
+.cal-modal-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--grey-400);line-height:1;padding:0}
+.cal-modal-close:hover{color:var(--grey-700)}
+.cal-modal-title{font-size:15px;font-weight:700;color:var(--grey-800);margin:0 24px 4px 0;line-height:1.3}
+.cal-modal-sub{font-size:11px;color:var(--grey-400);margin:0 0 12px}
+.cal-modal-links{display:flex;flex-direction:column;gap:7px}
+.cal-modal-links a,.cal-modal-links button{text-align:center}
+.cal-modal-note{font-size:11px;color:var(--grey-500);background:var(--grey-50);border-radius:5px;padding:7px 10px;margin-top:10px;line-height:1.5}
+
+@media(max-width:900px){.layout{flex-direction:column;height:auto}.sidebar{width:100%;max-height:none;border-left:none;border-top:1px solid var(--grey-200)}.quote-layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-teal">✈</span> EM Conference <span class="logo-teal">&amp;</span> Status Run Planner
+  </div>
+  <div class="header-controls">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-browse" onclick="setMode('browse')">Browse</button>
+      <button class="mode-btn" id="btn-quote" onclick="setMode('quote')">✦ Quote Mode</button>
+      <button class="mode-btn" id="btn-calendar" onclick="setMode('calendar')">📅 Calendar</button>
+    </div>
+    <button class="status-toggle-btn" id="status-toggle" onclick="toggleStatusMode()" title="Toggle Qantas/Air NZ status tracking UI">⚡ Status Run: ON</button>
+    <div class="budget-wrap">
+      <span>Budget: NZD</span>
+      <input type="number" class="budget-input-field" id="budget-input" value="9000" min="1000" max="50000" step="500" oninput="onBudgetChange()">
+      <input type="range" class="budget-slider" id="budget-slider" min="3000" max="25000" value="9000" step="500" oninput="onBudgetSlider()">
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- ═══════════════ MAIN PANEL ═══════════════ -->
+  <div class="main-panel">
+
+    <!-- BROWSE MODE -->
+    <div id="browse-mode">
+      <div class="promo-banner status-only">
+        <span class="promo-icon">⚡</span>
+        <div><strong>Best SC value from NZ:</strong> AKL→SYD→DPS (Bali) Business earns 400 QF SCs return — nearly 60% of Qantas Gold in one trip. ETM Cairns (Aug 19–21) + Bali Emergency Care (Oct 19–23) + Economy Sydney trip = <strong>740 SCs / ~NZD $7,700</strong></div>
+      </div>
+      <!-- ══ QANTAS DSC PROMO CALENDAR ══ -->
+      <div class="dsc-panel status-only">
+        <div class="dsc-panel-header" onclick="toggleDSC()">
+          <div class="dsc-title"><span class="dsc-bolt">⚡</span> Qantas Double Status Credit Promotions — Book at the right time <span class="dsc-subtitle">(tap to expand)</span></div>
+          <span class="dsc-chevron" id="dsc-chevron">▼</span>
+        </div>
+        <div id="dsc-body" class="dsc-body" style="display:none">
+          <p style="margin:0 0 8px 0;color:#78350f">QF runs ~3 DSC promos per year. Each has a <strong>~7-day booking window only</strong> — after which it's gone. Choose <strong>Double Status Credits</strong> (not points) when status-hunting. Flights can be booked up to 12 months ahead within the window.</p>
+          <div class="dsc-grid">
+            <div>
+              <h4>📅 Confirmed History</h4>
+              <div class="dsc-row"><span class="dsc-tag past">CLOSED</span><span><strong>Feb 24–Mar 2, 2026</strong> — travel to Feb 2027</span></div>
+              <div class="dsc-row"><span class="dsc-tag past">CLOSED</span><span><strong>Aug 28–Sep 3, 2025</strong> — travel to Aug 2026</span></div>
+              <div class="dsc-row"><span class="dsc-tag past">CLOSED</span><span><strong>Mar 12–18, 2025</strong> — travel to Feb 2026</span></div>
+              <div class="dsc-row"><span class="dsc-tag past">CLOSED</span><span><strong>Oct 2024</strong> (1 week) — travel to Oct 2025</span></div>
+              <div class="dsc-row"><span class="dsc-tag past">CLOSED</span><span><strong>Mar 2024</strong> (1 week) — travel to ~Mar 2025</span></div>
+            </div>
+            <div>
+              <h4>🔮 Next Estimated Windows</h4>
+              <div class="dsc-row"><span class="dsc-tag next">WATCH</span><span><strong>Late Aug 2026</strong> (est. ~Aug 25–31) — set QF app alert now</span></div>
+              <div class="dsc-row"><span class="dsc-tag est">EST</span><span><strong>Mid-Oct 2026</strong> — second window (not guaranteed)</span></div>
+              <div class="dsc-row"><span class="dsc-tag est">EST</span><span><strong>Feb/Mar 2027</strong> — annual flagship promo</span></div>
+              <div class="dsc-row"><span class="dsc-tag est">EST</span><span><strong>Aug/Sep 2027</strong> — mid-year window</span></div>
+            </div>
+          </div>
+          <div class="dsc-rule">
+            💡 <strong>Strategy:</strong> ACEP Chicago (Oct 5–8) is 35 days after the estimated Aug promo window closes — book it during the August DSC window and earn ~<strong>1,200 QF SCs return Business J from AKL</strong> (2× normal). That alone achieves Qantas Gold. Register in the <strong>QF App → Member Offers</strong> as soon as you see the email. Set a phone reminder for Aug 25, 2026.
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <select id="origin-select" onchange="renderCards()">
+          <optgroup label="New Zealand">
+            <option value="AKL">✈ Auckland (AKL)</option>
+            <option value="WLG">✈ Wellington (WLG)</option>
+            <option value="CHC">✈ Christchurch (CHC)</option>
+          </optgroup>
+          <optgroup label="Australia">
+            <option value="SYD">✈ Sydney (SYD)</option>
+            <option value="MEL">✈ Melbourne (MEL)</option>
+            <option value="BNE">✈ Brisbane (BNE)</option>
+            <option value="PER">✈ Perth (PER)</option>
+            <option value="ADL">✈ Adelaide (ADL)</option>
+            <option value="HBA">✈ Hobart (HBA)</option>
+            <option value="CBR">✈ Canberra (CBR)</option>
+            <option value="DRW">✈ Darwin (DRW)</option>
+          </optgroup>
+        </select>
+        <select id="year-filter" onchange="renderCards()" title="Filter by year">
+          <option value="">All years (2026–2028)</option>
+          <option value="2026" selected>2026</option>
+          <option value="2027">2027</option>
+          <option value="2028">2028 (est.)</option>
+        </select>
+        <select id="month-filter" onchange="renderCards()" title="Filter by month">
+          <option value="">All months</option>
+          <option value="01">January</option>
+          <option value="02">February</option>
+          <option value="03">March</option>
+          <option value="04">April</option>
+          <option value="05">May</option>
+          <option value="06">June</option>
+          <option value="07">July</option>
+          <option value="08">August</option>
+          <option value="09">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+        <input type="text" id="search-input" placeholder="Search conferences…" oninput="renderCards()" style="min-width:160px">
+        <select id="cat-filter" onchange="renderCards()">
+          <option value="">All categories</option>
+          <option value="Emergency Medicine">Emergency Medicine</option>
+          <option value="Critical Care">Critical Care</option>
+          <option value="Trauma">Trauma</option>
+          <option value="Trauma (International)">Trauma (International)</option>
+          <option value="Rural Medicine">Rural Medicine</option>
+          <option value="Radiology">Radiology / Imaging</option>
+          <option value="Ultrasound">Ultrasound</option>
+          <option value="Acute Medicine">Acute Medicine</option>
+          <option value="Indigenous Health">Indigenous Health</option>
+          <option value="Paediatric Emergency Medicine">Paediatric EM (DFTB etc.)</option>
+          <option value="Health Management">Health Management</option>
+          <option value="ACEM">ACEM Events</option>
+        </select>
+        <label class="filter-check"><input type="checkbox" id="hide-hols" onchange="renderCards()"> Hide school holiday dates</label>
+        <span class="results-count" id="results-count"></span>
+      </div>
+      <div class="cards-grid" id="conference-grid"></div>
+    </div>
+
+    <!-- QUOTE MODE -->
+    <div id="quote-mode">
+      <div class="quote-layout">
+        <!-- Left: form -->
+        <div class="quote-panel">
+          <h2>✦ Conference Quote Mode</h2>
+          <p style="font-size:12px;color:var(--grey-500);margin-bottom:16px">Select a conference, origin, and fare class to get a flight cost estimate and see how many status credits you'd earn toward Qantas Gold or Air NZ Koru Gold.</p>
+
+          <div class="form-group">
+            <label>Origin Airport</label>
+            <select id="q-origin">
+              <optgroup label="New Zealand">
+                <option value="AKL">Auckland (AKL)</option>
+                <option value="WLG">Wellington (WLG)</option>
+                <option value="CHC">Christchurch (CHC)</option>
+              </optgroup>
+              <optgroup label="Australia">
+                <option value="SYD">Sydney (SYD)</option>
+                <option value="MEL">Melbourne (MEL)</option>
+                <option value="BNE">Brisbane (BNE)</option>
+                <option value="PER">Perth (PER)</option>
+                <option value="ADL">Adelaide (ADL)</option>
+                <option value="HBA">Hobart (HBA)</option>
+                <option value="CBR">Canberra (CBR)</option>
+                <option value="DRW">Darwin (DRW)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Conference</label>
+            <div style="display:flex;gap:6px;margin-bottom:6px">
+              <select id="q-year-filter" onchange="populateQuoteConferences()" style="flex:1;padding:5px 8px;border:1px solid var(--grey-200);border-radius:7px;font-size:12px;background:var(--white);color:var(--grey-600)" title="Filter by year">
+                <option value="">All years</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+              </select>
+              <select id="q-month-filter" onchange="populateQuoteConferences()" style="flex:1;padding:5px 8px;border:1px solid var(--grey-200);border-radius:7px;font-size:12px;background:var(--white);color:var(--grey-600)" title="Filter by month">
+                <option value="">All months</option>
+                <option value="01">Jan</option>
+                <option value="02">Feb</option>
+                <option value="03">Mar</option>
+                <option value="04">Apr</option>
+                <option value="05">May</option>
+                <option value="06">Jun</option>
+                <option value="07">Jul</option>
+                <option value="08">Aug</option>
+                <option value="09">Sep</option>
+                <option value="10">Oct</option>
+                <option value="11">Nov</option>
+                <option value="12">Dec</option>
+              </select>
+            </div>
+            <select id="q-conference" onchange="updateFareSCRates()">
+              <option value="">— Select a conference —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fare Class</label>
+            <select id="q-fareclass" onchange="updateFareSCRates()">
+              <option value="J">Business Full (J/C) — max SC earn</option>
+              <option value="D">Business Saver (D/U) — 75% earn</option>
+              <option value="W">Premium Economy (W/P) — 50% earn</option>
+              <option value="Y">Economy Flex (Y/B) — 25% earn</option>
+              <option value="E">Economy Sale (E/T) — ~6% earn</option>
+            </select>
+          </div>
+
+          <div class="sc-rates-table status-only" id="sc-rates-table">
+            <div class="sc-rates-row"><span>Fare Class</span><span>QF SCs (rtn)</span><span>Air NZ SPs (rtn)</span><span>NZ CME (Biz)</span></div>
+            <div id="sc-rates-body"></div>
+          </div>
+
+          <div style="margin-top:14px">
+            <button class="btn-get-quote" onclick="generateQuote()">Get Quote →</button>
+          </div>
+        </div>
+
+        <!-- Right: result -->
+        <div class="quote-result-card" id="quote-result">
+          <div class="qr-header">
+            <div>
+              <div class="qr-title" id="qr-title">Flight Quote</div>
+              <div style="font-size:11px;color:var(--grey-400);margin-top:2px" id="qr-route"></div>
+            </div>
+            <div style="text-align:right">
+              <div class="qr-cost" id="qr-cost"></div>
+              <div class="qr-cost-note">Return estimate (NZD)<br>Book 6–10 weeks ahead for best fares</div>
+            </div>
+          </div>
+
+          <div class="sc-comparison status-only">
+            <div class="sc-col qantas-col">
+              <div class="sc-airline">Qantas FF</div>
+              <div class="sc-number" id="qr-qf-sc">0</div>
+              <div style="font-size:11px;color:var(--grey-500);margin-bottom:6px">Status Credits</div>
+              <div class="progress-bar"><div class="progress-fill" id="qr-qf-bar" style="width:0%"></div></div>
+              <div class="progress-text" id="qr-qf-pct">0% of Gold</div>
+              <div class="gold-note" id="qr-qf-note"></div>
+            </div>
+            <div class="sc-col airnz-col">
+              <div class="sc-airline">Air NZ Koru</div>
+              <div class="sc-number" id="qr-anz-sc">0</div>
+              <div style="font-size:11px;color:var(--grey-500);margin-bottom:6px">Status Points (est.)</div>
+              <div class="progress-bar"><div class="progress-fill" id="qr-anz-bar" style="width:0%"></div></div>
+              <div class="progress-text" id="qr-anz-pct">0% of Gold</div>
+              <div class="gold-note" id="qr-anz-note"></div>
+            </div>
+          </div>
+
+          <div style="font-size:11px;color:var(--grey-400);background:var(--grey-50);border-radius:7px;padding:8px 10px;margin-bottom:10px" id="qr-earn-note"></div>
+          <div class="cme-alert-box" id="qr-cme-note" style="display:none"></div>
+
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <a id="qr-skyscanner" href="#" target="_blank" class="btn btn-outline btn-sm">Skyscanner ↗</a>
+            <a id="qr-google" href="#" target="_blank" class="btn btn-outline btn-sm">Google Flights ↗</a>
+            <a id="qr-webjet" href="#" target="_blank" class="btn btn-outline btn-sm">Webjet ↗</a>
+            <a id="qr-qantas" href="https://www.qantas.com/au/en/book-a-trip/flights.html" target="_blank" class="btn btn-outline btn-sm">Qantas ↗</a>
+          </div>
+
+          <button class="btn-add-flight status-only" id="btn-add-flight-only" onclick="addFlightToTrip()">＋ Add Flight to Trip Planner</button>
+
+          <!-- ACCOMMODATION -->
+          <div class="accom-section">
+            <button class="accom-toggle-btn" onclick="toggleAccom()">＋ Add Accommodation</button>
+            <div class="accom-content" id="accom-content">
+              <div id="conf-accom-deals"></div>
+              <div id="general-accom-hotels"></div>
+              <div class="accom-cost-calc">
+                <h4>Calculate accommodation cost</h4>
+                <div class="cost-inputs">
+                  <label>Rate/night (NZD): <input type="number" id="accom-rate" value="250" min="0" step="10" oninput="updateAccomTotal()"></label>
+                  <label>Nights: <input type="number" id="accom-nights" value="3" min="1" max="30" oninput="updateAccomTotal()"></label>
+                </div>
+                <div class="accom-total-display" id="accom-total">Accommodation total: NZD $750</div>
+                <button class="btn-add-to-budget" onclick="addFlightAndAccomToTrip()">＋ Add Flight + Accommodation to Trip</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ CALENDAR MODE ═══════════════ -->
+    <div id="calendar-mode" style="display:none">
+      <div class="cal-controls">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <label style="font-size:12px;font-weight:600;color:var(--grey-600)">Year:
+            <select id="cal-year" onchange="renderCalendar()">
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+            </select>
+          </label>
+          <label style="font-size:12px;font-weight:600;color:var(--grey-600)">Category:
+            <select id="cal-cat-filter" onchange="renderCalendar()">
+              <option value="">All</option>
+              <option value="Emergency Medicine">Emergency Medicine</option>
+              <option value="Critical Care">Critical Care</option>
+              <option value="Trauma">Trauma</option>
+              <option value="Trauma (International)">Trauma (Intl)</option>
+              <option value="Paediatric Emergency Medicine">Paediatric EM</option>
+              <option value="ACEM">ACEM</option>
+              <option value="Health Management">Health Management</option>
+              <option value="Rural Medicine">Rural Medicine</option>
+              <option value="Ultrasound">Ultrasound</option>
+              <option value="Radiology">Radiology</option>
+            </select>
+          </label>
+          <label style="font-size:12px;font-weight:600;color:var(--grey-600)">From:
+            <select id="cal-origin" onchange="renderCalendar()">
+              <option value="AKL">AKL – Auckland</option>
+              <option value="WLG">WLG – Wellington</option>
+              <option value="CHC">CHC – Christchurch</option>
+              <option value="SYD">SYD – Sydney</option>
+              <option value="MEL">MEL – Melbourne</option>
+              <option value="BNE">BNE – Brisbane</option>
+              <option value="PER">PER – Perth</option>
+            </select>
+          </label>
+        </div>
+        <div class="cal-legend">
+          <span class="leg-item"><span class="leg-swatch" style="background:#f97316"></span>Flight out / return</span>
+          <span class="leg-item"><span class="leg-swatch" style="background:var(--teal)"></span>Conference</span>
+          <span class="leg-item"><span class="leg-swatch" style="background:#a855f7"></span>Accommodation (trip items)</span>
+        </div>
+      </div>
+
+      <div class="cal-outer">
+        <div class="cal-wrapper">
+          <div class="cal-head">
+            <div class="cal-head-spacer"></div>
+            <div class="cal-month-header" id="cal-month-header"></div>
+          </div>
+          <div id="cal-rows"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALENDAR MODAL -->
+    <div class="cal-modal" id="cal-modal" onclick="if(event.target===this)closeCalModal()">
+      <div class="cal-modal-box">
+        <button class="cal-modal-close" onclick="closeCalModal()">×</button>
+        <div id="cal-modal-body"></div>
+      </div>
+    </div>
+
+  </div><!-- /main-panel -->
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <h2>Trip Planner</h2>
+
+    <div class="sidebar-budget">
+      <div class="sb-budget-label">Flight Budget</div>
+      <div class="sb-budget-amount" id="sb-budget-display">NZD $9,000</div>
+      <div class="sb-budget-bar-wrap">
+        <div class="sb-budget-bar-fill" id="sb-budget-bar" style="width:0%"></div>
+      </div>
+      <div class="sb-budget-remaining" id="sb-budget-remaining">
+        <span>Spent: <strong>$0</strong></span>
+        <span>Left: <strong>$9,000</strong></span>
+      </div>
+    </div>
+
+    <div id="trip-items">
+      <div class="trip-empty">
+        <div class="empty-icon">🗺️</div>
+        <p>Browse conferences and add them to your trip — or use Quote Mode to estimate costs and credits.</p>
+      </div>
+    </div>
+
+    <div id="sb-totals" class="hidden">
+      <div class="sb-divider"></div>
+      <div class="sb-totals">
+        <div class="sb-total-row"><span>Flights</span><span id="sb-flights-cost">NZD $0</span></div>
+        <div class="sb-total-row"><span>Accommodation</span><span id="sb-accom-cost">NZD $0</span></div>
+        <div class="sb-total-row bold"><span>Total Trip Cost</span><span id="sb-total-cost">NZD $0</span></div>
+        <div class="sb-total-row" id="sb-over-row" style="display:none"><span style="color:var(--red)">⚠️ Over budget by</span><span id="sb-over-amt" style="color:var(--red);font-weight:700"></span></div>
+      </div>
+    </div>
+
+    <div class="status-progress status-only">
+      <h3>Status Progress</h3>
+      <div class="sp-row">
+        <span class="sp-label">Qantas Gold</span>
+        <div class="sp-bar-wrap"><div class="sp-bar-fill qf" id="sp-qf-bar" style="width:0%"></div></div>
+        <span class="sp-pct" id="sp-qf-pct" style="color:var(--gold)">0%</span>
+      </div>
+      <div style="font-size:10px;color:var(--grey-400);margin-bottom:6px;margin-left:70px"><span id="sp-qf-count">0</span> / 700 SCs</div>
+      <div class="sp-row">
+        <span class="sp-label">Air NZ Gold</span>
+        <div class="sp-bar-wrap"><div class="sp-bar-fill anz" id="sp-anz-bar" style="width:0%"></div></div>
+        <span class="sp-pct" id="sp-anz-pct" style="color:var(--teal)">0%</span>
+      </div>
+      <div style="font-size:10px;color:var(--grey-400);margin-bottom:10px;margin-left:70px"><span id="sp-anz-count">0</span> / 900 SPs (est.)</div>
+      <div class="gold-achieved hidden" id="qf-gold-banner">🥇 Qantas Gold Target Reached!</div>
+      <div class="gold-achieved hidden" id="anz-gold-banner" style="background:#E0F7F8;color:var(--teal-dark)">🥇 Air NZ Koru Gold Target Reached!</div>
+    </div>
+
+    <p class="sidebar-note status-only">Air NZ SP figures are estimates for partner-airline earning. Air NZ Koru Gold also requires ≥50% of SPs from Air NZ-operated flights — this constraint means Qantas Gold is significantly easier to achieve on this itinerary.</p>
+  </aside>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA LAYER
+// ══════════════════════════════════════════════════════
+
+const CONFERENCES = [
+  {
+    id:'emac-palmcove', name:'Emergency Medicine & Acute Care Course',
+    city:'Palm Cove', state:'QLD', country:'Australia', airport:'CNS',
+    startDate:'2026-07-07', endDate:'2026-07-10', category:'Emergency Medicine',
+    url:'https://www.alfredemergency.org/courses',
+    desc:'Intensive 4-day EM and acute care course in tropical North Queensland. Focus on practical procedures and resuscitation.',
+    schoolHoliday:true, scholNote:'NZ Winter hols (Jul 4–19) and QLD Winter hols overlap — expect 20–40% higher airfares',
+    confAccomUrl:null, confAccomNote:null,
+    accom:[
+      {name:'Crystalbrook Flynn (Cairns CBD)',url:'https://www.booking.com/searchresults.html?ss=Cairns+QLD&checkin=2026-07-06&checkout=2026-07-11&group_adults=1',src:'booking'},
+      {name:'Palm Cove Tropical House',url:'https://www.booking.com/searchresults.html?ss=Palm+Cove+QLD&checkin=2026-07-06&checkout=2026-07-11&group_adults=1',src:'booking'},
+      {name:'Pullman Cairns International',url:'https://www.hotels.com/search.do?q-destination=Cairns+QLD&d1=2026-07-06&d2=2026-07-11',src:'hotels'}
+    ]
+  },
+  {
+    id:'ct-fiji', name:'CT Acute Medical Conference',
+    city:'Nadi', state:'Fiji', country:'Fiji', airport:'NAN',
+    startDate:'2026-07-20', endDate:'2026-07-23', category:'Acute Medicine',
+    url:'https://ctacutemed.com',
+    desc:'Annual acute medicine conference in Fiji. Combines CME with an island setting — popular for status runs from NZ.',
+    schoolHoliday:true, scholNote:'End of NZ Winter hols (Jul 19 last day) — departure overlap possible',
+    confAccomUrl:null, confAccomNote:'Conference may include resort package accommodation. Check registration.',
+    accom:[
+      {name:'Intercontinental Fiji',url:'https://www.booking.com/searchresults.html?ss=Nadi+Fiji&checkin=2026-07-19&checkout=2026-07-24&group_adults=1',src:'booking'},
+      {name:'Sheraton Fiji Resort',url:'https://www.booking.com/searchresults.html?ss=Denarau+Fiji&checkin=2026-07-19&checkout=2026-07-24&group_adults=1',src:'booking'},
+      {name:'Hilton Fiji Beach Resort',url:'https://www.hotels.com/search.do?q-destination=Denarau+Fiji&d1=2026-07-19&d2=2026-07-24',src:'hotels'}
+    ]
+  },
+  {
+    id:'catalyst-melbourne', name:'Catalyst Critical Care Conference',
+    city:'Melbourne', state:'VIC', country:'Australia', airport:'MEL',
+    startDate:'2026-07-22', endDate:'2026-07-24', category:'Critical Care',
+    url:'https://catalystcriticalcare.com.au',
+    desc:'High-quality critical care conference covering ICU, resuscitation, and perioperative medicine. Well regarded by emergency physicians.',
+    schoolHoliday:false, scholNote:'Just after AU Winter hols — NZ hols end Jul 19, AU end ~Jul 12–19 depending on state',
+    confAccomUrl:null, confAccomNote:null,
+    accom:[
+      {name:'Crown Melbourne',url:'https://www.booking.com/searchresults.html?ss=Melbourne+CBD+VIC&checkin=2026-07-21&checkout=2026-07-25&group_adults=1',src:'booking'},
+      {name:'The Langham Melbourne',url:'https://www.booking.com/searchresults.html?ss=Southbank+Melbourne&checkin=2026-07-21&checkout=2026-07-25&group_adults=1',src:'booking'},
+      {name:'COMO The Treasury Melbourne',url:'https://www.hotels.com/search.do?q-destination=Melbourne+CBD&d1=2026-07-21&d2=2026-07-25',src:'hotels'}
+    ]
+  },
+  {
+    id:'etm-cairns', name:'ETM Course (Cairns)',
+    city:'Cairns', state:'QLD', country:'Australia', airport:'CNS',
+    startDate:'2026-08-19', endDate:'2026-08-21', category:'Emergency Medicine',
+    url:'https://etmcourse.com/events/etm-course-cairns-19th-21st-august-2026/',
+    desc:'3-day Emergency Trauma Management course at Cairns Hospital Skills Centre. Verified at etmcourse.com. Cost A$3,599 per delegate. Highly practical with simulation and skills stations.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://etmcourse.com', confAccomNote:'ETM does not list partner hotels. Delegates typically stay in Cairns CBD (~10 min to Hospital).',
+    accom:[
+      {name:'Shangri-La The Marina Cairns',url:'https://www.booking.com/searchresults.html?ss=Cairns+CBD+QLD&checkin=2026-08-18&checkout=2026-08-22&group_adults=1',src:'booking'},
+      {name:'Pullman Cairns International',url:'https://www.booking.com/searchresults.html?ss=Cairns+QLD&checkin=2026-08-18&checkout=2026-08-22&group_adults=1',src:'booking'},
+      {name:'Crystalbrook Flynn',url:'https://www.hotels.com/search.do?q-destination=Cairns+QLD&d1=2026-08-18&d2=2026-08-22',src:'hotels'}
+    ]
+  },
+  {
+    id:'xray-bali', name:'X-Ray Interpretation Bali',
+    city:'Legian', state:'Bali', country:'Indonesia', airport:'DPS',
+    startDate:'2026-09-14', endDate:'2026-09-17', category:'Radiology',
+    url:'https://x-raycourses.com.au',
+    desc:'Practical radiology and imaging interpretation course for emergency physicians held in Legian, Bali. Combines excellent CPD with an international setting.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://x-raycourses.com.au', confAccomNote:'Check x-raycourses.com.au for venue hotel and any group rates.',
+    accom:[
+      {name:'Padma Resort Legian',url:'https://www.booking.com/searchresults.html?ss=Legian+Bali+Indonesia&checkin=2026-09-13&checkout=2026-09-18&group_adults=1',src:'booking'},
+      {name:'Hard Rock Hotel Bali',url:'https://www.booking.com/searchresults.html?ss=Kuta+Legian+Bali&checkin=2026-09-13&checkout=2026-09-18&group_adults=1',src:'booking'},
+      {name:'The Legian Seminyak',url:'https://www.hotels.com/search.do?q-destination=Legian+Bali&d1=2026-09-13&d2=2026-09-18',src:'hotels'}
+    ]
+  },
+  {
+    id:'global-em-melb', name:'Global Emergency Care Conference',
+    city:'Melbourne', state:'VIC', country:'Australia', airport:'MEL',
+    startDate:'2026-09-15', endDate:'2026-09-16', category:'Emergency Medicine',
+    url:'https://globalemcc.com',
+    desc:'International emergency care conference drawing global EM expertise to Melbourne. Strong focus on systems, policy, and clinical innovation.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://globalemcc.com', confAccomNote:'Check conference site for venue hotel and any partner rates.',
+    accom:[
+      {name:'Crown Promenade Melbourne',url:'https://www.booking.com/searchresults.html?ss=Melbourne+CBD+VIC&checkin=2026-09-14&checkout=2026-09-17&group_adults=1',src:'booking'},
+      {name:'Intercontinental Melbourne The Rialto',url:'https://www.booking.com/searchresults.html?ss=Collins+Street+Melbourne&checkin=2026-09-14&checkout=2026-09-17&group_adults=1',src:'booking'},
+      {name:'Sofitel Melbourne on Collins',url:'https://www.hotels.com/search.do?q-destination=Melbourne+CBD&d1=2026-09-14&d2=2026-09-17',src:'hotels'}
+    ],
+    adjacent:['sonic-noosa']
+  },
+  {
+    id:'sonic-noosa', name:'SONIC 2026 — Emergency Ultrasound',
+    city:'Noosa Heads', state:'QLD', country:'Australia', airport:'BNE',
+    startDate:'2026-09-16', endDate:'2026-09-18', category:'Ultrasound',
+    url:'https://sonicultrasound.com.au',
+    desc:'Premier emergency ultrasound conference at Noosa. Practical skills workshops, lectures, and beach setting. Attracts international POCUS faculty.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://sonicultrasound.com.au', confAccomNote:'SONIC often uses the Sofitel Noosa as the conference hotel. Check site for group rates.',
+    accom:[
+      {name:'Sofitel Noosa Pacific Resort',url:'https://www.booking.com/searchresults.html?ss=Noosa+Heads+QLD&checkin=2026-09-15&checkout=2026-09-19&group_adults=1',src:'booking'},
+      {name:'Noosa Blue Resort',url:'https://www.booking.com/searchresults.html?ss=Noosa+Heads+QLD&checkin=2026-09-15&checkout=2026-09-19&group_adults=1',src:'booking'},
+      {name:'Sheraton Noosa Resort',url:'https://www.hotels.com/search.do?q-destination=Noosa+Heads+Queensland&d1=2026-09-15&d2=2026-09-19',src:'hotels'}
+    ],
+    adjacent:['global-em-melb']
+  },
+  {
+    id:'etm-perth', name:'ETM Course (Perth)',
+    city:'Perth', state:'WA', country:'Australia', airport:'PER',
+    startDate:'2026-09-21', endDate:'2026-09-23', category:'Emergency Medicine',
+    url:'https://etmcourse.com',
+    desc:'3-day ETM course at CTEC, University of Western Australia. Verified at etmcourse.com. Cost A$3,599. UWA campus location near QEII hospital precinct.',
+    schoolHoliday:false, scholNote:'Just before WA Spring break (Sep 26–Oct 11) — book flights before prices rise',
+    confAccomUrl:'https://etmcourse.com', confAccomNote:'ETM does not list specific partner hotels. UWA campus area has several options.',
+    accom:[
+      {name:'Quest Perth on James St',url:'https://www.booking.com/searchresults.html?ss=Perth+CBD+WA&checkin=2026-09-20&checkout=2026-09-24&group_adults=1',src:'booking'},
+      {name:'Pan Pacific Perth',url:'https://www.booking.com/searchresults.html?ss=Perth+CBD+WA&checkin=2026-09-20&checkout=2026-09-24&group_adults=1',src:'booking'},
+      {name:'Crown Towers Perth',url:'https://www.hotels.com/search.do?q-destination=Perth+WA&d1=2026-09-20&d2=2026-09-24',src:'hotels'}
+    ]
+  },
+  {
+    id:'wfpiccs-melb', name:'WFPICCS & ANZICS Joint ASM',
+    city:'Melbourne', state:'VIC', country:'Australia', airport:'MEL',
+    startDate:'2026-09-26', endDate:'2026-09-30', category:'Critical Care',
+    url:'https://anzics.org',
+    desc:'World Federation of Paediatric Intensive & Critical Care Societies joint meeting with ANZICS Annual Scientific Meeting. Major critical care event.',
+    schoolHoliday:true, scholNote:'NZ & AU Spring hols begin ~Sep 26 — flights out will be significantly more expensive',
+    confAccomUrl:'https://anzics.org', confAccomNote:'ANZICS typically lists partner hotels on the conference website. Check anzics.org closer to the date.',
+    accom:[
+      {name:'Crown Melbourne (MCEC area)',url:'https://www.booking.com/searchresults.html?ss=South+Wharf+Melbourne&checkin=2026-09-25&checkout=2026-10-01&group_adults=1',src:'booking'},
+      {name:'Pan Pacific Melbourne',url:'https://www.booking.com/searchresults.html?ss=Melbourne+Convention+Centre&checkin=2026-09-25&checkout=2026-10-01&group_adults=1',src:'booking'},
+      {name:'Crowne Plaza Melbourne',url:'https://www.hotels.com/search.do?q-destination=Southbank+Melbourne&d1=2026-09-25&d2=2026-10-01',src:'hotels'}
+    ]
+  },
+  {
+    id:'anz-trauma-syd', name:'ANZ Trauma Society Conference',
+    city:'Sydney', state:'NSW', country:'Australia', airport:'SYD',
+    startDate:'2026-10-15', endDate:'2026-10-17', category:'Trauma',
+    url:'https://anzts.org',
+    desc:'Annual conference of the Australia & New Zealand Trauma Society. Excellent for emergency physicians with trauma interest. Sydney venue TBC.',
+    schoolHoliday:false, scholNote:'After all spring school holidays end (Oct 12) — good window',
+    confAccomUrl:'https://anzts.org', confAccomNote:'Check anzts.org for conference venue and any partner accommodation.',
+    accom:[
+      {name:'Marriott Sydney Hotel',url:'https://www.booking.com/searchresults.html?ss=Sydney+CBD+NSW&checkin=2026-10-14&checkout=2026-10-18&group_adults=1',src:'booking'},
+      {name:'Intercontinental Sydney',url:'https://www.booking.com/searchresults.html?ss=Sydney+CBD+NSW&checkin=2026-10-14&checkout=2026-10-18&group_adults=1',src:'booking'},
+      {name:'Westin Sydney',url:'https://www.hotels.com/search.do?q-destination=Sydney+CBD+NSW&d1=2026-10-14&d2=2026-10-18',src:'hotels'}
+    ],
+    adjacent:['rural-medicine-adl']
+  },
+  {
+    id:'bali-ec', name:'Bali Emergency Care Conference',
+    city:'Seminyak', state:'Bali', country:'Indonesia', airport:'DPS',
+    startDate:'2026-10-19', endDate:'2026-10-23', category:'Emergency Medicine',
+    url:'https://ampedmedicalconferences.com.au',
+    desc:'Emergency care conference in Seminyak, Bali. Run by Amped Medical Conferences. Outstanding CME in a resort setting. Very popular with Australasian EM physicians.',
+    schoolHoliday:false, scholNote:'After all spring breaks — excellent window for Bali travel',
+    confAccomUrl:'https://ampedmedicalconferences.com.au', confAccomNote:'Amped Medical often include or recommend accommodation as part of conference registration. Check their site for package options.',
+    accom:[
+      {name:'W Bali – Seminyak',url:'https://www.booking.com/searchresults.html?ss=Seminyak+Bali&checkin=2026-10-18&checkout=2026-10-24&group_adults=1',src:'booking'},
+      {name:'The Layar Private Villas',url:'https://www.booking.com/searchresults.html?ss=Seminyak+Bali+Indonesia&checkin=2026-10-18&checkout=2026-10-24&group_adults=1',src:'booking'},
+      {name:'COMO Uma Seminyak',url:'https://www.hotels.com/search.do?q-destination=Seminyak+Bali&d1=2026-10-18&d2=2026-10-24',src:'hotels'}
+    ]
+  },
+  {
+    id:'rural-medicine-adl', name:'Rural Medicine Australia',
+    city:'Adelaide', state:'SA', country:'Australia', airport:'ADL',
+    startDate:'2026-10-21', endDate:'2026-10-24', category:'Rural Medicine',
+    url:'https://rdaa.com.au',
+    desc:'National rural medicine conference covering remote and rural emergency care, workforce, and policy. Relevant for EM physicians with rural practice.',
+    schoolHoliday:false, scholNote:'Clear of all school holidays — good window',
+    confAccomUrl:'https://rdaa.com.au', confAccomNote:'Check rdaa.com.au for conference venue and partner hotels.',
+    accom:[
+      {name:'Mayfair Hotel Adelaide',url:'https://www.booking.com/searchresults.html?ss=Adelaide+CBD+SA&checkin=2026-10-20&checkout=2026-10-25&group_adults=1',src:'booking'},
+      {name:'Hilton Adelaide',url:'https://www.booking.com/searchresults.html?ss=Adelaide+CBD+SA&checkin=2026-10-20&checkout=2026-10-25&group_adults=1',src:'booking'},
+      {name:'Intercontinental Adelaide',url:'https://www.hotels.com/search.do?q-destination=Adelaide+CBD+SA&d1=2026-10-20&d2=2026-10-25',src:'hotels'}
+    ],
+    adjacent:['anz-trauma-syd']
+  },
+  {
+    id:'goodem-rottnest', name:'GOODEM 2026',
+    city:'Rottnest Island', state:'WA', country:'Australia', airport:'PER',
+    startDate:'2026-11-11', endDate:'2026-11-12', category:'Emergency Medicine',
+    url:'https://goodem.org',
+    desc:'Unique 2-day emergency medicine conference on Rottnest Island, WA. Intimate, high-quality event with a strong community feel. Limited places — register early.',
+    schoolHoliday:false, scholNote:'Clear window',
+    confAccomUrl:'https://goodem.org', confAccomNote:'Rottnest Island has very limited accommodation. GOODEM may arrange group bookings. Alternatively, stay in Perth and take ferry (30 min, ~A$35 each way).',
+    accom:[
+      {name:'Discovery Rottnest Island',url:'https://www.booking.com/searchresults.html?ss=Rottnest+Island+WA&checkin=2026-11-10&checkout=2026-11-13&group_adults=1',src:'booking'},
+      {name:'Rottnest Lodge',url:'https://www.rottnestlodge.com.au/',src:'direct'},
+      {name:'Pan Pacific Perth (stay mainland)',url:'https://www.hotels.com/search.do?q-destination=Perth+CBD+WA&d1=2026-11-10&d2=2026-11-13',src:'hotels'}
+    ]
+  },
+  {
+    id:'acem-asm-perth', name:'ACEM Annual Scientific Meeting',
+    city:'Perth', state:'WA', country:'Australia', airport:'PER',
+    startDate:'2026-11-22', endDate:'2026-11-26', category:'Emergency Medicine',
+    url:'https://acem.org.au',
+    desc:'The flagship annual meeting of the Australasian College for Emergency Medicine. Perth Convention and Exhibition Centre (Boorloo | Perth), Nov 22–26, 2026. Main ASM program plus 14 skills-focused workshops across Nov 22–23 and Nov 25–26. Workshops will sell out — register early. Essential for Australasian emergency physicians.',
+    schoolHoliday:false, scholNote:'Clear window — November is an excellent travel month',
+    confAccomUrl:'https://acem.org.au', confAccomNote:'ACEM typically lists official partner hotels with discounted rates on the ASM conference page. Check acem.org.au/asm2026 for accommodation partner links.',
+    accom:[
+      {name:'Crown Towers Perth (conference partner — check site)',url:'https://www.crownperth.com.au/hotels/crown-towers',src:'direct'},
+      {name:'Pan Pacific Perth',url:'https://www.booking.com/searchresults.html?ss=Perth+Convention+Centre&checkin=2026-11-21&checkout=2026-11-27&group_adults=1',src:'booking'},
+      {name:'InterContinental Perth City Centre',url:'https://www.hotels.com/search.do?q-destination=Perth+CBD+WA&d1=2026-11-21&d2=2026-11-27',src:'hotels'}
+    ]
+  },
+  {
+    id:'etm-goldcoast', name:'ETM Course (Gold Coast)',
+    city:'Gold Coast', state:'QLD', country:'Australia', airport:'BNE',
+    startDate:'2026-11-27', endDate:'2026-11-29', category:'Emergency Medicine',
+    url:'https://etmcourse.com',
+    desc:'3-day ETM course on the Gold Coast. Ideal if combining with ACEM ASM Perth (Nov 22–26) — fly PER→OOL/BNE for a second conference on the same long trip.',
+    schoolHoliday:false, scholNote:'Clear window — just before December peak',
+    confAccomUrl:'https://etmcourse.com', confAccomNote:null,
+    accom:[
+      {name:'JW Marriott Gold Coast Resort',url:'https://www.booking.com/searchresults.html?ss=Gold+Coast+QLD&checkin=2026-11-26&checkout=2026-11-30&group_adults=1',src:'booking'},
+      {name:'Sheraton Grand Mirage Resort',url:'https://www.booking.com/searchresults.html?ss=Main+Beach+Gold+Coast&checkin=2026-11-26&checkout=2026-11-30&group_adults=1',src:'booking'},
+      {name:'The Star Grand Gold Coast',url:'https://www.hotels.com/search.do?q-destination=Gold+Coast+QLD&d1=2026-11-26&d2=2026-11-30',src:'hotels'}
+    ]
+  },
+  // ── NEW CONFERENCES (PRIDoC, AiDA, WADEM research additions) ──
+  {
+    id:'ems-queenstown', name:'EMS Conference Queenstown 2026',
+    city:'Queenstown', state:'NZ', country:'New Zealand', airport:'ZQN',
+    startDate:'2026-07-27', endDate:'2026-07-31', category:'Emergency Medicine',
+    url:'https://emsconferences.com.au/',
+    desc:'Emergency Medicine and Simulation Conference held in Queenstown NZ, Jul 27–31, 2026. Simulation-based learning in a stunning alpine setting. NZ-based delegates: domestic flight earns minimal status credits — consider combining with a trans-Tasman trip.',
+    schoolHoliday:false, scholNote:'After NZ Winter school holidays (end Jul 19) — clear window for NZ-based delegates. AU visitors will earn trans-Tasman SCs.',
+    confAccomUrl:'https://emsconferences.com.au/', confAccomNote:'Check emsconferences.com.au for venue and group accommodation options.',
+    accom:[
+      {name:'Hilton Queenstown Resort & Spa',url:'https://www.booking.com/searchresults.html?ss=Queenstown+New+Zealand&checkin=2026-07-26&checkout=2026-08-01&group_adults=1',src:'booking'},
+      {name:'Sofitel Queenstown Hotel & Spa',url:'https://www.booking.com/searchresults.html?ss=Queenstown+NZ&checkin=2026-07-26&checkout=2026-08-01&group_adults=1',src:'booking'},
+      {name:'Eichardt\'s Private Hotel Queenstown',url:'https://www.hotels.com/search.do?q-destination=Queenstown+New+Zealand&d1=2026-07-26&d2=2026-08-01',src:'hotels'}
+    ]
+  },
+  {
+    id:'aida-perth', name:'AIDA 2026 Conference',
+    city:'Perth (Scarborough Beach)', state:'WA', country:'Australia', airport:'PER',
+    startDate:'2026-09-03', endDate:'2026-09-05', category:'Indigenous Health',
+    url:'https://aida2026conference.eventsair.site/',
+    desc:'Australian Indigenous Doctors Association annual conference. Sep 3–5, 2026 at Rendezvous Perth Hotel Scarborough. Covers Indigenous health, culturally safe practice, workforce, and leadership. Highly relevant for NZ physicians working with Māori and Pacific communities. Conference hotel: Rendezvous Perth Hotel Scarborough.',
+    schoolHoliday:false, scholNote:'Just before WA Spring break (Sep 26–Oct 11) — good booking window. Check in Sep 2 for full 3-day program.',
+    confAccomUrl:'https://aida2026conference.eventsair.site/', confAccomNote:'Conference venue IS the Rendezvous Perth Hotel Scarborough — book here for convenience and any delegate group rates.',
+    accom:[
+      {name:'Rendezvous Perth Hotel Scarborough (venue hotel)',url:'https://www.rendezvoushotels.com/perth-scarborough',src:'direct'},
+      {name:'Scarborough Beach alternatives',url:'https://www.booking.com/searchresults.html?ss=Scarborough+Beach+Perth+WA&checkin=2026-09-02&checkout=2026-09-06&group_adults=1',src:'booking'},
+      {name:'Perth CBD hotels (20 min drive)',url:'https://www.hotels.com/search.do?q-destination=Perth+CBD+WA&d1=2026-09-02&d2=2026-09-06',src:'hotels'}
+    ]
+  },
+  {
+    id:'emcore-nz', name:'EMCORE New Zealand 2026',
+    city:'New Zealand (venue TBC)', state:'NZ', country:'New Zealand', airport:'AKL',
+    startDate:'2026-09-28', endDate:'2026-10-01', category:'Emergency Medicine',
+    url:'https://www.emcore.com.au/shop/emcore-conferences/emcore-new-zealand-28-sept-1-oct-2026/',
+    desc:'EMCORE Emergency Medicine Conference — New Zealand edition. Sep 28–Oct 1, 2026. Venue TBC (historically Auckland or Queenstown). High-quality EM education, typically small group, high faculty-to-delegate ratio. Note: falls during NZ Spring school holidays — AU visitors face pricier trans-Tasman fares.',
+    schoolHoliday:true, scholNote:'NZ Spring school holidays (Sep 26–Oct 11) — higher trans-Tasman fares. NZ-based delegates: no flights needed if held in Auckland.',
+    confAccomUrl:'https://www.emcore.com.au/shop/emcore-conferences/emcore-new-zealand-28-sept-1-oct-2026/', confAccomNote:'Check emcore.com.au for venue confirmation and any accommodation partner deals.',
+    accom:[
+      {name:'SkyCity Hotel Auckland (if AKL venue)',url:'https://www.booking.com/searchresults.html?ss=Auckland+CBD+New+Zealand&checkin=2026-09-27&checkout=2026-10-02&group_adults=1',src:'booking'},
+      {name:'Hilton Queenstown (if QTown venue)',url:'https://www.booking.com/searchresults.html?ss=Queenstown+New+Zealand&checkin=2026-09-27&checkout=2026-10-02&group_adults=1',src:'booking'},
+      {name:'General NZ hotels — check venue first',url:'https://www.hotels.com/search.do?q-destination=Auckland+New+Zealand&d1=2026-09-27&d2=2026-10-02',src:'hotels'}
+    ]
+  },
+  {
+    id:'pridoc-taipei', name:'PRIDoC 2026 — Pacific Region Indigenous Doctors Congress',
+    city:'Taoyuan City', state:'Taiwan', country:'Taiwan', airport:'TPE',
+    startDate:'2026-11-30', endDate:'2026-12-04', category:'Indigenous Health',
+    url:'https://my.aida.org.au/Portal/Shared_Content/Events/Event_Display.aspx?EventKey=PRIDOC2026',
+    desc:'Pacific Region Indigenous Doctors Congress 2026. Nov 30–Dec 4, Taoyuan City, Taiwan (Messe Taoyuan Congress Center). International congress for Indigenous doctors from the Pacific — Māori, Aboriginal, Pacific Islander, and First Nations. Hosted by AIDA. Major international CME opportunity with strong cultural focus.',
+    schoolHoliday:false, scholNote:'Clear of NZ and AU school holidays. Long-haul: ~11h from AKL (via SYD), ~9h from SYD. Business class is CME-eligible on this route from NZ (>4 hours).',
+    confAccomUrl:'https://my.aida.org.au/Portal/Shared_Content/Events/Event_Display.aspx?EventKey=PRIDOC2026', confAccomNote:'Check AIDA website for partner accommodation and any congress hotel block bookings in Taoyuan.',
+    international:true,
+    accom:[
+      {name:'Marriott Taoyuan',url:'https://www.booking.com/searchresults.html?ss=Taoyuan+City+Taiwan&checkin=2026-11-29&checkout=2026-12-05&group_adults=1',src:'booking'},
+      {name:'Holiday Inn Taoyuan Gateway',url:'https://www.booking.com/searchresults.html?ss=Taoyuan+Taiwan&checkin=2026-11-29&checkout=2026-12-05&group_adults=1',src:'booking'},
+      {name:'Taipei hotels (30 min by MRT)',url:'https://www.hotels.com/search.do?q-destination=Taipei+Taiwan&d1=2026-11-29&d2=2026-12-05',src:'hotels'}
+    ]
+  },
+  // ══ 2026 INTERNATIONAL (USA) ══
+  {
+    id:'acep-2026', name:'ACEP26 Scientific Assembly',
+    city:'Chicago', state:'IL', country:'USA', airport:'ORD',
+    startDate:'2026-10-05', endDate:'2026-10-08', category:'Emergency Medicine',
+    url:'https://www.acep.org/sa', international:true,
+    desc:'World\'s largest emergency medicine educational conference. Oct 5–8, 2026, McCormick Place / Sheraton Grand Chicago. ACEP brings together 8,000+ EM physicians globally with plenaries, workshops, simulation, and exhibits. Exceptional CME and networking. AKL→LAX→ORD = ~600 QF SCs return Business J (nearly Gold in one trip!). Book during the Aug 2026 DSC window for double SCs.',
+    schoolHoliday:false, scholNote:'Clear of NZ school holidays. School holiday-free window — Oct 5 is perfect. Note: expensive long-haul, ~NZD $8,000–$14,000 return Business from AKL.',
+    confAccomUrl:'https://www.acep.org/sa', confAccomNote:'ACEP lists official partner hotels at heavily discounted rates on the conference site. Book early — Chicago hotel rooms during ACEP fill fast.',
+    accom:[
+      {name:'Sheraton Grand Chicago (conference hotel)',url:'https://www.booking.com/searchresults.html?ss=Sheraton+Chicago+River+North&checkin=2026-10-04&checkout=2026-10-09&group_adults=1',src:'booking'},
+      {name:'Marriott Marquis Chicago (convention area)',url:'https://www.booking.com/searchresults.html?ss=McCormick+Place+Chicago&checkin=2026-10-04&checkout=2026-10-09&group_adults=1',src:'booking'},
+      {name:'Chicago CBD alternatives',url:'https://www.hotels.com/search.do?q-destination=Chicago+IL+USA&d1=2026-10-04&d2=2026-10-09',src:'hotels'}
+    ]
+  },
+  // ══ 2027 USA/CANADA ══
+  {
+    id:'east-2027', name:'EAST 40th Annual Scientific Assembly',
+    city:'New Orleans', state:'LA', country:'USA', airport:'MSY',
+    startDate:'2027-01-12', endDate:'2027-01-15', category:'Trauma (International)',
+    url:'https://www.east.org/education-resources/annual-scientific-assembly', international:true,
+    desc:'40th Annual Scientific Assembly of the Eastern Association for the Surgery of Trauma. Jan 12–15, 2027, Sheraton New Orleans. Premier North American trauma surgery conference — essential for EM physicians with acute care surgery or trauma interest. Strong research and clinical focus. From AKL: ~18h total via LAX, earns ~640 QF SCs return Business J.',
+    schoolHoliday:false, scholNote:'Clear of NZ and AU school holidays — excellent January timing. Note: January is peak season in New Orleans (Mardi Gras prep). Book accommodation early.',
+    confAccomUrl:'https://www.east.org/education-resources/annual-scientific-assembly', confAccomNote:'EAST lists official partner hotels at the Sheraton New Orleans. Book conference rate through EAST registration.',
+    accom:[
+      {name:'Sheraton New Orleans (conference hotel)',url:'https://www.booking.com/searchresults.html?ss=Sheraton+New+Orleans&checkin=2027-01-11&checkout=2027-01-16&group_adults=1',src:'booking'},
+      {name:'Marriott New Orleans',url:'https://www.booking.com/searchresults.html?ss=New+Orleans+French+Quarter&checkin=2027-01-11&checkout=2027-01-16&group_adults=1',src:'booking'},
+      {name:'New Orleans CBD hotels',url:'https://www.hotels.com/search.do?q-destination=New+Orleans+Louisiana&d1=2027-01-11&d2=2027-01-16',src:'hotels'}
+    ]
+  },
+  {
+    id:'wta-2027', name:'WTA 56th Annual Meeting',
+    city:'Whistler', state:'BC', country:'Canada', airport:'YVR',
+    startDate:'2027-02-21', endDate:'2027-02-26', category:'Trauma (International)',
+    url:'https://www.westerntrauma.org/annual-meeting/', international:true,
+    desc:'56th Western Trauma Association Annual Meeting. Feb 21–26, 2027, Fairmont Château Whistler, Whistler BC, Canada. Intimate, high-quality trauma surgery meeting in a ski resort setting. Smaller format (400 attendees) means excellent access to faculty. Previous locations include Snowmass CO and Big Sky MT. From AKL: ~14h to YVR (Air Canada direct or via SYD), earns ~520 QF SCs return Business J.',
+    schoolHoliday:false, scholNote:'Feb 21–26 is during NZ Term 1 — no school holiday overlap from NZ. Whistler February = ski season, book accommodation and flights very early.',
+    confAccomUrl:'https://www.westerntrauma.org/annual-meeting/', confAccomNote:'Conference is at Fairmont Château Whistler — block rooms sell out very fast. Book through WTA when registration opens.',
+    accom:[
+      {name:'Fairmont Château Whistler (conference hotel)',url:'https://www.fairmont.com/whistler/',src:'direct'},
+      {name:'Four Seasons Resort Whistler',url:'https://www.booking.com/searchresults.html?ss=Whistler+BC+Canada&checkin=2027-02-20&checkout=2027-02-27&group_adults=1',src:'booking'},
+      {name:'Whistler Village alternatives',url:'https://www.hotels.com/search.do?q-destination=Whistler+British+Columbia+Canada&d1=2027-02-20&d2=2027-02-27',src:'hotels'}
+    ]
+  },
+  {
+    id:'acep-2027', name:'ACEP27 Scientific Assembly',
+    city:'Boston', state:'MA', country:'USA', airport:'BOS',
+    startDate:'2027-10-25', endDate:'2027-10-28', category:'Emergency Medicine',
+    url:'https://www.acep.org/master-calendar/acep27-scientific-assembly', international:true,
+    desc:'ACEP27 Scientific Assembly. Oct 25–28, 2027, Boston Convention and Exhibition Center (BCEC), Boston MA. World\'s largest EM conference — 8,000+ attendees. Exceptional academic program, workshops, and EM networking. From AKL: ~19h via LAX+AA, earns ~680 QF SCs return Business J. Book flights during the Feb/Mar 2027 DSC window for double SCs.',
+    schoolHoliday:false, scholNote:'Clear of NZ and AU spring school holidays — excellent late-October timing. Boston in October is beautiful (peak foliage).',
+    confAccomUrl:'https://www.acep.org/master-calendar/acep27-scientific-assembly', confAccomNote:'ACEP will list partner hotels with conference rates when registration opens (typically 12 months ahead). Book BCEC area hotels early.',
+    accom:[
+      {name:'Westin Boston Seaport (near BCEC)',url:'https://www.booking.com/searchresults.html?ss=Boston+Seaport+MA&checkin=2027-10-24&checkout=2027-10-29&group_adults=1',src:'booking'},
+      {name:'Marriott Boston Long Wharf',url:'https://www.booking.com/searchresults.html?ss=Boston+Waterfront+MA&checkin=2027-10-24&checkout=2027-10-29&group_adults=1',src:'booking'},
+      {name:'Boston CBD hotels',url:'https://www.hotels.com/search.do?q-destination=Boston+Massachusetts&d1=2027-10-24&d2=2027-10-29',src:'hotels'}
+    ]
+  },
+  // ══ 2027 AU/NZ RECURRING (ESTIMATED DATES) ══
+  {
+    id:'etm-cairns-2027', name:'ETM Course (Cairns) — 2027',
+    city:'Cairns', state:'QLD', country:'Australia', airport:'CNS',
+    startDate:'2027-08-18', endDate:'2027-08-20', category:'Emergency Medicine',
+    url:'https://etmcourse.com', estimated:true,
+    desc:'Estimated 2027 date — ETM Cairns typically runs in August each year. 3-day Emergency Trauma Management course at Cairns Hospital Skills Centre. Verify exact dates and register at etmcourse.com when announced.',
+    schoolHoliday:false, scholNote:'Estimated after NZ/AU Winter hols — verify exact dates on etmcourse.com.',
+    confAccomUrl:null, confAccomNote:'Check etmcourse.com for 2027 dates and accommodation.',
+    accom:[
+      {name:'Pullman Cairns International',url:'https://www.booking.com/searchresults.html?ss=Cairns+QLD&checkin=2027-08-17&checkout=2027-08-21&group_adults=1',src:'booking'},
+      {name:'Shangri-La The Marina Cairns',url:'https://www.hotels.com/search.do?q-destination=Cairns+QLD&d1=2027-08-17&d2=2027-08-21',src:'hotels'}
+    ]
+  },
+  {
+    id:'aida-2027', name:'AIDA 2027 Conference (estimated)',
+    city:'TBC', state:'AU', country:'Australia', airport:'SYD',
+    startDate:'2027-09-02', endDate:'2027-09-04', category:'Indigenous Health',
+    url:'https://www.aida.org.au', estimated:true,
+    desc:'Australian Indigenous Doctors Association annual conference — estimated September 2027, location TBC. AIDA rotates between AU capital cities. Check aida.org.au for 2027 announcement.',
+    schoolHoliday:false, scholNote:'Estimated date — verify on aida.org.au when announced.',
+    confAccomUrl:'https://www.aida.org.au', confAccomNote:'Location and accommodation TBC — check aida.org.au.',
+    accom:[
+      {name:'Check aida.org.au for 2027 venue',url:'https://www.aida.org.au',src:'direct'}
+    ]
+  },
+  {
+    id:'sonic-2027', name:'SONIC 2027 — Emergency Ultrasound (estimated)',
+    city:'Noosa Heads (est.)', state:'QLD', country:'Australia', airport:'BNE',
+    startDate:'2027-09-15', endDate:'2027-09-17', category:'Ultrasound',
+    url:'https://sonicultrasound.com.au', estimated:true,
+    desc:'Estimated 2027 SONIC ultrasound conference — typically held mid-September in Noosa. Verify at sonicultrasound.com.au when dates are announced.',
+    schoolHoliday:false, scholNote:'Estimated date based on 2026 pattern — verify on sonicultrasound.com.au.',
+    confAccomUrl:'https://sonicultrasound.com.au', confAccomNote:null,
+    accom:[
+      {name:'Sofitel Noosa Pacific Resort (est. venue)',url:'https://www.booking.com/searchresults.html?ss=Noosa+Heads+QLD&checkin=2027-09-14&checkout=2027-09-18&group_adults=1',src:'booking'}
+    ]
+  },
+  {
+    id:'acem-asm-2027', name:'ACEM ASM 2027 (estimated)',
+    city:'TBC', state:'AU', country:'Australia', airport:'SYD',
+    startDate:'2027-11-21', endDate:'2027-11-25', category:'Emergency Medicine',
+    url:'https://acem.org.au', estimated:true,
+    desc:'Estimated 2027 ACEM Annual Scientific Meeting — typically late November. Location rotates between AU cities. Check acem.org.au for 2027 announcement. The flagship annual meeting of the Australasian College for Emergency Medicine.',
+    schoolHoliday:false, scholNote:'Estimated — verify exact dates and location at acem.org.au.',
+    confAccomUrl:'https://acem.org.au', confAccomNote:'Location TBC — check acem.org.au for 2027 details.',
+    accom:[
+      {name:'Check acem.org.au for 2027 venue',url:'https://acem.org.au',src:'direct'}
+    ]
+  },
+  // ══ 2028 KEY RECURRING (ESTIMATED DATES) ══
+  {
+    id:'east-2028', name:'EAST Annual Scientific Assembly 2028 (est.)',
+    city:'TBC (USA)', state:'USA', country:'USA', airport:'ORD',
+    startDate:'2028-01-11', endDate:'2028-01-14', category:'Trauma (International)',
+    url:'https://www.east.org/education-resources/annual-scientific-assembly', estimated:true, international:true,
+    desc:'Estimated 2028 EAST Annual Scientific Assembly — typically January, rotates between US cities. Check east.org for 2028 announcement. Airport placeholder set to ORD; update when location confirmed.',
+    schoolHoliday:false, scholNote:'Estimated — verify on east.org when 2028 dates announced.',
+    confAccomUrl:'https://www.east.org', confAccomNote:'Location TBC.',
+    accom:[{name:'Check east.org for 2028 venue',url:'https://www.east.org',src:'direct'}]
+  },
+  {
+    id:'wta-2028', name:'WTA 57th Annual Meeting 2028 (est.)',
+    city:'TBC (USA/Canada)', state:'Mountain West', country:'USA', airport:'DEN',
+    startDate:'2028-02-20', endDate:'2028-02-25', category:'Trauma (International)',
+    url:'https://www.westerntrauma.org/annual-meeting/', estimated:true, international:true,
+    desc:'Estimated 2028 WTA Annual Meeting — typically late February in a US/Canadian mountain resort (Snowmass CO, Big Sky MT, Whistler BC). Check westerntrauma.org for 2028 announcement.',
+    schoolHoliday:false, scholNote:'Estimated — verify on westerntrauma.org.',
+    confAccomUrl:'https://www.westerntrauma.org', confAccomNote:'Location TBC.',
+    accom:[{name:'Check westerntrauma.org for 2028 venue',url:'https://www.westerntrauma.org',src:'direct'}]
+  },
+  {
+    id:'acep-2028', name:'ACEP28 Scientific Assembly (est.)',
+    city:'TBC (USA)', state:'USA', country:'USA', airport:'ORD',
+    startDate:'2028-10-09', endDate:'2028-10-12', category:'Emergency Medicine',
+    url:'https://www.acep.org/sa/general-information/future-dates', estimated:true, international:true,
+    desc:'Estimated 2028 ACEP Scientific Assembly — typically early-to-mid October. Check acep.org/sa for 2028 dates and location. World\'s largest EM conference.',
+    schoolHoliday:false, scholNote:'Estimated — verify on acep.org.',
+    confAccomUrl:'https://www.acep.org', confAccomNote:'Location TBC.',
+    accom:[{name:'Check acep.org for 2028 venue',url:'https://www.acep.org',src:'direct'}]
+  },
+  {
+    id:'acem-asm-2028', name:'ACEM ASM 2028 (est.)',
+    city:'TBC', state:'AU', country:'Australia', airport:'MEL',
+    startDate:'2028-11-19', endDate:'2028-11-23', category:'Emergency Medicine',
+    url:'https://acem.org.au', estimated:true,
+    desc:'Estimated 2028 ACEM Annual Scientific Meeting. Verify at acem.org.au when announced.',
+    schoolHoliday:false, scholNote:'Estimated — verify on acem.org.au.',
+    confAccomUrl:'https://acem.org.au', confAccomNote:'Location TBC.',
+    accom:[{name:'Check acem.org.au for 2028 venue',url:'https://acem.org.au',src:'direct'}]
+  },
+  // ══ UK / EUROPE / PAEDIATRIC EM ══
+  {
+    id:'dftb26', name:"Don't Forget the Bubbles 2026 (DFTB26)",
+    city:'Glasgow', state:'Scotland', country:'UK', airport:'GLA',
+    startDate:'2026-06-22', endDate:'2026-06-24', category:'Paediatric Emergency Medicine',
+    url:'https://dftb26.com/', estimated:false, international:true,
+    desc:"World-renowned paediatric emergency medicine conference. DFTB26 at Glasgow SEC, June 22–24 2026. Confirmed at dftb26.com. DFTB alternates UK/Europe ↔ AU/NZ each year. Outstanding paediatric EM education with global faculty. 3 days CPD. 🚨 IMMINENT — conference starts in days.",
+    schoolHoliday:false, scholNote:'UK school summer hols begin after Jun 24 — good timing. NZ: clear of school holidays.',
+    confAccomUrl:'https://dftb26.com/', confAccomNote:'Check dftb26.com for partner hotels. Radisson Red is adjacent to Glasgow SEC. City centre is ~10 min.',
+    accom:[
+      {name:'Radisson Red Glasgow (next to SEC)',url:'https://www.booking.com/searchresults.html?ss=Glasgow+SEC+Scotland&checkin=2026-06-21&checkout=2026-06-25&group_adults=1',src:'booking'},
+      {name:'AC Hotel by Marriott Glasgow',url:'https://www.booking.com/searchresults.html?ss=Glasgow+Scotland&checkin=2026-06-21&checkout=2026-06-25&group_adults=1',src:'booking'},
+      {name:'Hilton Glasgow',url:'https://www.hotels.com/search.do?q-destination=Glasgow+Scotland&d1=2026-06-21&d2=2026-06-25',src:'hotels'}
+    ]
+  },
+  {
+    id:'pem-conf-2026', name:'PEM Conference 2026 (RCEM/RCPCH Joint)',
+    city:'Bristol', state:'England', country:'UK', airport:'LHR',
+    startDate:'2026-07-02', endDate:'2026-07-02', category:'Paediatric Emergency Medicine',
+    url:'https://www.rcem.ac.uk', estimated:false, international:true,
+    desc:'1-day joint RCEM/RCPCH Paediatric Emergency Medicine Conference, July 2, 2026, Bristol. 6 CPD points. Bristol Airport (BRS) has very limited international service — fly into LHR then take train to Bristol (1.5h). Ideal paired trip with DFTB26 Glasgow (Jun 22–24): fly LHR → Glasgow for DFTB26, return to London, then rail Bristol for PEM Conf on Jul 2 — all in one UK trip.',
+    schoolHoliday:false, scholNote:'Just before UK school summer holidays. NZ: clear. Jul 2 is 8 days after DFTB26 — a combined UK trip is feasible and cost-efficient.',
+    confAccomUrl:'https://www.rcem.ac.uk', confAccomNote:'Check rcem.ac.uk for venue and accommodation details for the Bristol PEM Conference.',
+    accom:[
+      {name:'Bristol Marriott Hotel City Centre',url:'https://www.booking.com/searchresults.html?ss=Bristol+England&checkin=2026-07-01&checkout=2026-07-03&group_adults=1',src:'booking'},
+      {name:'Hotel du Vin Bristol',url:'https://www.booking.com/searchresults.html?ss=Bristol+England&checkin=2026-07-01&checkout=2026-07-03&group_adults=1',src:'booking'},
+      {name:'Radisson Blu Hotel Bristol',url:'https://www.hotels.com/search.do?q-destination=Bristol+England&d1=2026-07-01&d2=2026-07-03',src:'hotels'}
+    ]
+  },
+  {
+    id:'eusem-2026', name:'EUSEM 2026 — European Emergency Medicine Congress',
+    city:'Paris', state:'Île-de-France', country:'France', airport:'CDG',
+    startDate:'2026-09-23', endDate:'2026-09-27', category:'Emergency Medicine',
+    url:'https://eusemcongress.org/', estimated:false, international:true,
+    desc:'European Society for Emergency Medicine annual congress, Paris, September 23–27, 2026 (pre-courses Sep 23–24, main congress Sep 25–27). Confirmed at eusemcongress.org. Major European EM event drawing global faculty. Direct flights from SYD/MEL via SIN or DXB connect well to CDG. Business class from NZ is CME-eligible (>4h).',
+    schoolHoliday:false, scholNote:'Clear of NZ school holidays. French Rentrée (back to school) is early Sep — fares are post-peak by late Sep. Good booking window.',
+    confAccomUrl:'https://eusemcongress.org/', confAccomNote:'Check eusemcongress.org for official conference hotel options in Paris.',
+    accom:[
+      {name:'Pullman Paris Centre-Bercy',url:'https://www.booking.com/searchresults.html?ss=Paris+France&checkin=2026-09-22&checkout=2026-09-28&group_adults=1',src:'booking'},
+      {name:'Novotel Paris Centre Tour Eiffel',url:'https://www.booking.com/searchresults.html?ss=Paris+France&checkin=2026-09-22&checkout=2026-09-28&group_adults=1',src:'booking'},
+      {name:'InterContinental Paris Le Grand',url:'https://www.hotels.com/search.do?q-destination=Paris+France&d1=2026-09-22&d2=2026-09-28',src:'hotels'}
+    ]
+  },
+  {
+    id:'rcem-2027', name:'RCEM Annual Scientific Conference 2027',
+    city:'Manchester', state:'England', country:'UK', airport:'MAN',
+    startDate:'2027-04-12', endDate:'2027-04-15', category:'Emergency Medicine',
+    url:'https://rcem.ac.uk/annual-conference-2027/', estimated:false, international:true,
+    desc:'Royal College of Emergency Medicine Annual Scientific Conference, Manchester Central Convention Centre, April 12–15, 2027. Confirmed at rcem.ac.uk. Premier UK emergency medicine conference. Manchester Airport (MAN) has direct services from Dubai and other hubs. Business class from NZ is CME-eligible (>4h). Pairs well with RCPCH 2027 Liverpool (May 19–21) — 5 weeks later.',
+    schoolHoliday:false, scholNote:'UK Easter holidays typically fall in April — check 2027 exact dates. NZ: clear of school holidays in April 2027.',
+    confAccomUrl:'https://rcem.ac.uk/annual-conference-2027/', confAccomNote:'Check RCEM website for recommended hotels near Manchester Central. Midland Hotel is adjacent.',
+    accom:[
+      {name:'The Midland Hotel Manchester (adjacent to convention centre)',url:'https://www.booking.com/searchresults.html?ss=Manchester+England&checkin=2027-04-11&checkout=2027-04-16&group_adults=1',src:'booking'},
+      {name:'Hilton Manchester Deansgate',url:'https://www.booking.com/searchresults.html?ss=Manchester+England&checkin=2027-04-11&checkout=2027-04-16&group_adults=1',src:'booking'},
+      {name:'Hotel Gotham Manchester',url:'https://www.hotels.com/search.do?q-destination=Manchester+England&d1=2027-04-11&d2=2027-04-16',src:'hotels'}
+    ]
+  },
+  {
+    id:'rcpch-2027', name:'RCPCH Annual Conference 2027',
+    city:'Liverpool', state:'England', country:'UK', airport:'MAN',
+    startDate:'2027-05-19', endDate:'2027-05-21', category:'Paediatric Emergency Medicine',
+    url:'https://www.rcpch.ac.uk/news-events/rcpch-conference', estimated:false, international:true,
+    desc:'Royal College of Paediatrics and Child Health Annual Conference, Liverpool Exhibition Centre, May 19–21, 2027. Confirmed at rcpch.ac.uk. Key UK paediatric medicine conference covering child health, policy, and clinical practice. Fly into Manchester (MAN, ~1h by road to Liverpool) for international connections, or Liverpool John Lennon (LPL, limited international service). Pairs well with RCEM 2027 Manchester (Apr 12–15) — consider a 6-week UK itinerary.',
+    schoolHoliday:false, scholNote:'UK May half-term is typically late May — verify 2027 exact dates. NZ: clear of school holidays.',
+    confAccomUrl:'https://www.rcpch.ac.uk/news-events/rcpch-conference', confAccomNote:'Check RCPCH website for accommodation recommendations near Liverpool Exhibition Centre.',
+    accom:[
+      {name:'Titanic Hotel Liverpool',url:'https://www.booking.com/searchresults.html?ss=Liverpool+England&checkin=2027-05-18&checkout=2027-05-22&group_adults=1',src:'booking'},
+      {name:'Pullman Liverpool',url:'https://www.booking.com/searchresults.html?ss=Liverpool+England&checkin=2027-05-18&checkout=2027-05-22&group_adults=1',src:'booking'},
+      {name:'AC Hotel Liverpool',url:'https://www.hotels.com/search.do?q-destination=Liverpool+England&d1=2027-05-18&d2=2027-05-22',src:'hotels'}
+    ]
+  },
+  {
+    id:'dftb27', name:"Don't Forget the Bubbles 2027 (DFTB27 — est.)",
+    city:'TBC (AU/NZ likely)', state:'TBC', country:'TBC', airport:'SYD',
+    startDate:'2027-06-15', endDate:'2027-06-17', category:'Paediatric Emergency Medicine',
+    url:'https://dontforgetthebubbles.com', estimated:true,
+    desc:"Estimated DFTB 2027 — DFTB alternates between UK/Europe and AU/NZ. After Glasgow 2026 (UK), the 2027 edition is likely to return to Australia or New Zealand (~June estimated). No dates or location confirmed yet. Watch dontforgetthebubbles.com for announcements.",
+    schoolHoliday:false, scholNote:'Estimated date — verify at dontforgetthebubbles.com when announced.',
+    confAccomUrl:'https://dontforgetthebubbles.com', confAccomNote:'Location TBC — check DFTB website for 2027 announcement.',
+    accom:[{name:'TBC — watch dontforgetthebubbles.com',url:'https://dontforgetthebubbles.com',src:'direct'}]
+  },
+  {
+    id:'eusem-2027', name:'EUSEM 2027 — European Emergency Medicine Congress (est.)',
+    city:'TBC (European city)', state:'Europe', country:'TBC', airport:'CDG',
+    startDate:'2027-09-22', endDate:'2027-09-26', category:'Emergency Medicine',
+    url:'https://eusemcongress.org/', estimated:true, international:true,
+    desc:'Estimated EUSEM 2027 annual congress — European Society for Emergency Medicine, estimated September 2027. Location rotates among European cities (Paris 2026, TBC 2027). Check eusemcongress.org for 2027 announcement. Business class from NZ is CME-eligible (>4h).',
+    schoolHoliday:false, scholNote:'Estimated date and location — verify at eusemcongress.org.',
+    confAccomUrl:'https://eusemcongress.org/', confAccomNote:'Location TBC — check EUSEM website for 2027 announcement.',
+    accom:[{name:'TBC — watch eusemcongress.org',url:'https://eusemcongress.org',src:'direct'}]
+  },
+  // ══ ACEM EVENTS 2026–2027 ══
+  // In-person ACEM events
+  {
+    id:'acem-pocus-jul26', name:'ACEM Progress POCUS Ultrasound Workshop',
+    city:'West Melbourne', state:'VIC', country:'Australia', airport:'MEL',
+    startDate:'2026-07-17', endDate:'2026-07-17', category:'ACEM',
+    url:'https://acem.org.au',
+    desc:'Hands-on scanning workshop at ACEM Head Office, West Melbourne. Expert supervision and personalised feedback. Choose formative feedback only or include structured summative assessment. Spots strictly limited — register early. 1-day workshop.',
+    schoolHoliday:true, scholNote:'VIC Winter school holidays Jul ~4–19 — accommodation near West Melbourne may be pricier. Book early.',
+    confAccomUrl:'https://acem.org.au', confAccomNote:'Day trip from CBD possible — ACEM Head Office is in West Melbourne (~10 min from CBD). Many hotels in the Melbourne CBD.',
+    accom:[
+      {name:'QT Melbourne (CBD)',url:'https://www.booking.com/searchresults.html?ss=Melbourne+CBD+VIC&checkin=2026-07-16&checkout=2026-07-18&group_adults=1',src:'booking'},
+      {name:'Hotel Indigo Melbourne on Flinders',url:'https://www.booking.com/searchresults.html?ss=Melbourne+CBD+VIC&checkin=2026-07-16&checkout=2026-07-18&group_adults=1',src:'booking'},
+      {name:'Grand Hyatt Melbourne',url:'https://www.hotels.com/search.do?q-destination=Melbourne+CBD&d1=2026-07-16&d2=2026-07-18',src:'hotels'}
+    ]
+  },
+  {
+    id:'gemtas-2026', name:'GEMTAS 2026 — Geriatric Emergency Medicine Training and Assessment',
+    city:'Hobart', state:'TAS', country:'Australia', airport:'HBA',
+    startDate:'2026-09-03', endDate:'2026-09-03', category:'ACEM',
+    url:'https://acem.org.au',
+    desc:'1-day ACEM education and training day focused on emergency care for older patients — including the key clinical differences, management principles, and the dignity of risk in older patient decision-making. Nipaluna | Hobart. Highly relevant CPD for ED physicians.',
+    schoolHoliday:false, scholNote:'Clear of NZ and AU school holidays. Sep 3 is a good window.',
+    confAccomUrl:'https://acem.org.au', confAccomNote:'1-day event in Hobart CBD area. Several hotels within walking distance of Hobart\'s conference precinct.',
+    accom:[
+      {name:'The Henry Jones Art Hotel Hobart',url:'https://www.booking.com/searchresults.html?ss=Hobart+TAS+Australia&checkin=2026-09-02&checkout=2026-09-04&group_adults=1',src:'booking'},
+      {name:'Islington Hotel Hobart',url:'https://www.booking.com/searchresults.html?ss=Hobart+TAS+Australia&checkin=2026-09-02&checkout=2026-09-04&group_adults=1',src:'booking'},
+      {name:'Wrest Point Hotel Hobart',url:'https://www.hotels.com/search.do?q-destination=Hobart+Tasmania&d1=2026-09-02&d2=2026-09-04',src:'hotels'}
+    ]
+  },
+  {
+    id:'acem-ps-workshop-sep26', name:'ACEM Patient Safety Workshop — Safe Care for Life',
+    city:'Melbourne', state:'VIC', country:'Australia', airport:'MEL',
+    startDate:'2026-09-17', endDate:'2026-09-17', category:'ACEM',
+    url:'https://acem.org.au',
+    desc:'World Patient Safety Day workshop (September 17). Focus on the future of emergency care — challenges and advancements over the next decade and their patient safety implications. Check acem.org.au for venue confirmation (may be held at ACEM Head Office, Melbourne, or as a hybrid event).',
+    schoolHoliday:false, scholNote:'NZ Spring hols typically Sep 26 onwards — Sep 17 is clear.',
+    confAccomUrl:'https://acem.org.au', confAccomNote:'Confirm venue on acem.org.au — may be Melbourne or hybrid. 1-day event.',
+    accom:[
+      {name:'Crown Promenade Melbourne',url:'https://www.booking.com/searchresults.html?ss=Melbourne+CBD+VIC&checkin=2026-09-16&checkout=2026-09-18&group_adults=1',src:'booking'},
+      {name:'Novotel Melbourne on Collins',url:'https://www.booking.com/searchresults.html?ss=Melbourne+CBD+VIC&checkin=2026-09-16&checkout=2026-09-18&group_adults=1',src:'booking'},
+      {name:'Sofitel Melbourne on Collins',url:'https://www.hotels.com/search.do?q-destination=Melbourne+CBD&d1=2026-09-16&d2=2026-09-18',src:'hotels'}
+    ]
+  },
+  {
+    id:'acem-sv-melb-jul26', name:'ACEM Supervisor Workshop — Melbourne (July)',
+    city:'West Melbourne', state:'VIC', country:'Australia', airport:'MEL',
+    startDate:'2026-07-16', endDate:'2026-07-16', category:'ACEM',
+    url:'https://acem.org.au',
+    desc:'1-day ACEM Supervisor Workshop at ACEM Head Office, West Melbourne, VIC. For FACEM supervisors and those preparing to become supervisors. Practical training in giving effective supervision, feedback, and supporting trainees in difficulty.',
+    schoolHoliday:true, scholNote:'VIC Winter hols overlap — book accommodation early if staying overnight.',
+    confAccomUrl:'https://acem.org.au', confAccomNote:'ACEM Head Office, West Melbourne. Day trip from Melbourne CBD practical (~10 min).',
+    accom:[
+      {name:'Melbourne CBD hotels (10 min to ACEM HQ)',url:'https://www.booking.com/searchresults.html?ss=Melbourne+CBD+VIC&checkin=2026-07-15&checkout=2026-07-17&group_adults=1',src:'booking'}
+    ]
+  },
+  {
+    id:'acem-sv-syd-jul26', name:'ACEM Supervisor Workshop — Sydney (July)',
+    city:'Surry Hills', state:'NSW', country:'Australia', airport:'SYD',
+    startDate:'2026-07-23', endDate:'2026-07-23', category:'ACEM',
+    url:'https://acem.org.au',
+    desc:'1-day ACEM Supervisor Workshop at Rydges Sydney Central, Surry Hills, NSW. For FACEM supervisors. Practical training in giving effective supervision and feedback to FACEM trainees, and supporting trainees in difficulty.',
+    schoolHoliday:true, scholNote:'NSW/ACT Winter hols approx Jul 7–25 — this falls at the tail end. Book early.',
+    confAccomUrl:'https://acem.org.au', confAccomNote:'Workshop venue: Rydges Sydney Central, Surry Hills (near Central Station). Consider staying on-site.',
+    accom:[
+      {name:'Rydges Sydney Central (workshop venue)',url:'https://www.booking.com/searchresults.html?ss=Surry+Hills+Sydney+NSW&checkin=2026-07-22&checkout=2026-07-24&group_adults=1',src:'booking'},
+      {name:'Ace Hotel Sydney (nearby)',url:'https://www.booking.com/searchresults.html?ss=Surry+Hills+Sydney+NSW&checkin=2026-07-22&checkout=2026-07-24&group_adults=1',src:'booking'}
+    ]
+  },
+  {
+    id:'acem-rrrm-2027', name:'ACEM Regional, Rural and Remote EM Conference 2027',
+    city:'Hobart', state:'TAS', country:'Australia', airport:'HBA',
+    startDate:'2027-07-18', endDate:'2027-07-20', category:'ACEM',
+    url:'https://acem.org.au',
+    desc:'"Under Southern Skies" — ACEM Regional, Rural and Remote Emergency Medicine Conference, Hotel Grand Chancellor, Nipaluna | Hobart, July 18–20, 2027. Three days of education, peer connection, and professional development specifically for regional, rural, and remote EM practitioners. Highly relevant CPD for physicians working outside major urban centres.',
+    schoolHoliday:true, scholNote:'NZ and AU Winter school holidays typically mid-July — flights to Hobart may cost more. Book early.',
+    confAccomUrl:'https://acem.org.au', confAccomNote:'Conference venue: Hotel Grand Chancellor Hobart — consider staying on-site for convenience.',
+    accom:[
+      {name:'Hotel Grand Chancellor Hobart (conference venue)',url:'https://www.booking.com/searchresults.html?ss=Hobart+TAS+Australia&checkin=2027-07-17&checkout=2027-07-21&group_adults=1',src:'booking'},
+      {name:'The Henry Jones Art Hotel',url:'https://www.booking.com/searchresults.html?ss=Hobart+TAS+Australia&checkin=2027-07-17&checkout=2027-07-21&group_adults=1',src:'booking'},
+      {name:'Wrest Point Hotel',url:'https://www.hotels.com/search.do?q-destination=Hobart+Tasmania&d1=2027-07-17&d2=2027-07-21',src:'hotels'}
+    ]
+  },
+  // ACEM Online / Webinar Events
+  {
+    id:'acem-psychosocial-jun26', name:'ACEM Webinar: Managing Psychosocial Hazards in the Workplace',
+    city:'Online', state:'Webinar', country:'Australia', airport:null,
+    startDate:'2026-06-23', endDate:'2026-06-23', category:'ACEM',
+    url:'https://acem.org.au', virtual:true,
+    desc:'Wellness Week Webinar — Australian legislation on psychosocial hazards viewed through the lens of emergency medicine. Hosted by ACEM. 1 ACEM CPD hour. Tues 23 June 2026, 1:00pm AEST / 3:00pm NZST. Online via Zoom or equivalent. Register on acem.org.au.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://acem.org.au', confAccomNote:null,
+    accom:[]
+  },
+  {
+    id:'acem-mcq-jul26', name:'ACEM: Multiple Choice Question Writing Workshop',
+    city:'Online', state:'Webinar', country:'Australia', airport:null,
+    startDate:'2026-07-06', endDate:'2026-07-06', category:'ACEM',
+    url:'https://acem.org.au', virtual:true,
+    desc:'Online MCQ Writing Workshop — for FACEM fellows and trainees interested in contributing to ACEM\'s question bank. Learn the principles of high-quality multiple-choice question writing for medical education. Check acem.org.au for timing and registration.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://acem.org.au', confAccomNote:null,
+    accom:[]
+  },
+  {
+    id:'acem-premn-jul26', name:'ACEM Webinar: Private Emergency Medicine — Dispelling Myths (PrEMN Inaugural)',
+    city:'Online', state:'Webinar', country:'Australia', airport:null,
+    startDate:'2026-07-23', endDate:'2026-07-23', category:'ACEM',
+    url:'https://acem.org.au', virtual:true,
+    desc:'PrEMN Inaugural Webinar — Private Emergency Medicine Network. Topics: private EDs, FACEM training pathways in the private sector, and FACEM-led urgent care models. Q&A included. Thurs 23 July 2026, 3:00–4:30pm AEST / 5:00–6:30pm NZST. Register via acem.org.au.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://acem.org.au', confAccomNote:null,
+    accom:[]
+  },
+  {
+    id:'acem-demt-jul26', name:'ACEM: DEMT Orientation Online Workshop',
+    city:'Online', state:'Webinar', country:'Australia', airport:null,
+    startDate:'2026-07-27', endDate:'2026-07-27', category:'ACEM',
+    url:'https://acem.org.au', virtual:true,
+    desc:'ACEM Diploma of Emergency Medicine and Trauma (DEMT) Orientation Online Workshop. For new DEMT candidates and supervisors. Check acem.org.au for timing and registration details.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://acem.org.au', confAccomNote:null,
+    accom:[]
+  },
+  {
+    id:'acem-facem-info-jul26', name:'ACEM: 2026 Selection into FACEM Training — Information Session 2',
+    city:'Online', state:'Webinar', country:'Australia', airport:null,
+    startDate:'2026-07-30', endDate:'2026-07-30', category:'ACEM',
+    url:'https://acem.org.au', virtual:true,
+    desc:'Online information session for candidates considering FACEM training selection in 2026. Covers application process, eligibility, assessment, and Q&A. Thurs 30 July 2026. Register via acem.org.au.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://acem.org.au', confAccomNote:null,
+    accom:[]
+  },
+  {
+    id:'acem-cbd-aug26', name:'ACEM: Peer Case-Based Discussion Session (CPD)',
+    city:'Online', state:'Webinar', country:'Australia', airport:null,
+    startDate:'2026-08-04', endDate:'2026-08-04', category:'ACEM',
+    url:'https://acem.org.au', virtual:true,
+    desc:'ACEM Peer Case-Based Discussion Session — CPD opportunity for FACEM fellows. Structured discussion of clinical cases in an online group setting. Counts towards ACEM CPD requirements. Tues 4 August 2026. Register via acem.org.au.',
+    schoolHoliday:false, scholNote:'',
+    confAccomUrl:'https://acem.org.au', confAccomNote:null,
+    accom:[]
+  },
+  {
+    id:'achsm-2027', name:'ACHSM Asia Pacific Health Leadership Congress 2027 (est.)',
+    city:'TBC (AU/NZ)', state:'TBC', country:'TBC', airport:'SYD',
+    startDate:'2027-10-20', endDate:'2027-10-22', category:'Health Management',
+    url:'https://achsm.org.au', estimated:true,
+    desc:'Estimated 2027 ACHSM (Australasian College of Health Service Management) Asia Pacific Health Leadership Congress. Annual event held across AU/NZ, typically October or March. Highly relevant for emergency physicians in clinical leadership or management roles. Strong focus on health systems, strategy, and leadership development. Check achsm.org.au for 2027 dates and location.',
+    schoolHoliday:false, scholNote:'Estimated October date — typically clear of NZ school holidays. Verify at achsm.org.au.',
+    confAccomUrl:'https://achsm.org.au', confAccomNote:'Location TBC — check ACHSM website when announced.',
+    accom:[{name:'TBC — watch achsm.org.au',url:'https://achsm.org.au',src:'direct'}]
+  }
+];
+
+// Route data: key = ORIGIN-DESTAIRPORT, values are for return trip Business J
+const ROUTES = {
+  // From AKL
+  'AKL-CNS':{qfSC:280,anzSP:150,cLow:2800,cHigh:4000,hrs:5.5,via:'via SYD'},
+  'AKL-MEL':{qfSC:160,anzSP:100,cLow:1800,cHigh:2600,hrs:3.5,via:'direct'},
+  'AKL-BNE':{qfSC:160,anzSP:100,cLow:1600,cHigh:2400,hrs:3.0,via:'direct'},
+  'AKL-SYD':{qfSC:160,anzSP:100,cLow:1700,cHigh:2500,hrs:3.0,via:'direct'},
+  'AKL-PER':{qfSC:200,anzSP:130,cLow:2600,cHigh:3800,hrs:6.0,via:'direct'},
+  'AKL-NAN':{qfSC:120,anzSP:75,cLow:1400,cHigh:2000,hrs:3.0,via:'direct'},
+  'AKL-DPS':{qfSC:400,anzSP:200,cLow:3200,cHigh:4600,hrs:9.0,via:'via SYD'},
+  'AKL-ADL':{qfSC:200,anzSP:110,cLow:2200,cHigh:3200,hrs:5.0,via:'via SYD or MEL'},
+  'AKL-ZQN':{qfSC:30,anzSP:20,cLow:200,cHigh:400,hrs:1.5,via:'direct (domestic NZ)'},
+  'AKL-TPE':{qfSC:320,anzSP:170,cLow:3400,cHigh:5000,hrs:11.0,via:'via SYD'},
+  // From WLG
+  'WLG-CNS':{qfSC:280,anzSP:150,cLow:3000,cHigh:4400,hrs:6.0,via:'via SYD'},
+  'WLG-MEL':{qfSC:160,anzSP:100,cLow:1900,cHigh:2800,hrs:3.5,via:'direct or via SYD'},
+  'WLG-BNE':{qfSC:160,anzSP:100,cLow:1800,cHigh:2600,hrs:3.5,via:'direct'},
+  'WLG-SYD':{qfSC:160,anzSP:100,cLow:1600,cHigh:2400,hrs:3.0,via:'direct'},
+  'WLG-PER':{qfSC:200,anzSP:130,cLow:2800,cHigh:4000,hrs:6.5,via:'via SYD or MEL'},
+  'WLG-NAN':{qfSC:120,anzSP:75,cLow:1500,cHigh:2200,hrs:3.5,via:'direct'},
+  'WLG-DPS':{qfSC:400,anzSP:200,cLow:3400,cHigh:4900,hrs:9.5,via:'via SYD'},
+  'WLG-ADL':{qfSC:200,anzSP:110,cLow:2300,cHigh:3400,hrs:5.5,via:'via SYD or MEL'},
+  'WLG-ZQN':{qfSC:20,anzSP:15,cLow:200,cHigh:400,hrs:1.0,via:'direct (domestic NZ)'},
+  'WLG-TPE':{qfSC:320,anzSP:170,cLow:3600,cHigh:5200,hrs:11.5,via:'via SYD'},
+  // From CHC
+  'CHC-CNS':{qfSC:280,anzSP:150,cLow:2900,cHigh:4200,hrs:5.5,via:'via SYD'},
+  'CHC-MEL':{qfSC:160,anzSP:100,cLow:1800,cHigh:2600,hrs:3.5,via:'direct'},
+  'CHC-BNE':{qfSC:160,anzSP:100,cLow:1700,cHigh:2500,hrs:3.5,via:'direct'},
+  'CHC-SYD':{qfSC:160,anzSP:100,cLow:1600,cHigh:2400,hrs:3.0,via:'direct'},
+  'CHC-PER':{qfSC:200,anzSP:130,cLow:2600,cHigh:3800,hrs:6.0,via:'via SYD or MEL'},
+  'CHC-NAN':{qfSC:120,anzSP:75,cLow:1400,cHigh:2100,hrs:4.0,via:'via AKL'},
+  'CHC-DPS':{qfSC:400,anzSP:200,cLow:3200,cHigh:4600,hrs:9.5,via:'via SYD'},
+  'CHC-ADL':{qfSC:200,anzSP:110,cLow:2200,cHigh:3200,hrs:4.5,via:'via SYD or MEL'},
+  'CHC-ZQN':{qfSC:15,anzSP:10,cLow:150,cHigh:350,hrs:0.5,via:'direct (domestic NZ)'},
+  'CHC-TPE':{qfSC:320,anzSP:170,cLow:3400,cHigh:5000,hrs:11.0,via:'via SYD'},
+  // From SYD
+  'SYD-CNS':{qfSC:120,anzSP:65,cLow:900,cHigh:1400,hrs:3.0,via:'direct'},
+  'SYD-MEL':{qfSC:80,anzSP:45,cLow:700,cHigh:1100,hrs:1.5,via:'direct'},
+  'SYD-BNE':{qfSC:80,anzSP:45,cLow:600,cHigh:1000,hrs:1.5,via:'direct'},
+  'SYD-PER':{qfSC:160,anzSP:110,cLow:1400,cHigh:2200,hrs:5.0,via:'direct'},
+  'SYD-DPS':{qfSC:240,anzSP:140,cLow:1400,cHigh:2200,hrs:6.0,via:'direct'},
+  'SYD-ADL':{qfSC:80,anzSP:45,cLow:600,cHigh:1000,hrs:2.0,via:'direct'},
+  'SYD-NAN':{qfSC:120,anzSP:70,cLow:1000,cHigh:1600,hrs:3.5,via:'direct'},
+  'SYD-ZQN':{qfSC:80,anzSP:45,cLow:700,cHigh:1200,hrs:3.0,via:'direct'},
+  'SYD-TPE':{qfSC:220,anzSP:120,cLow:2200,cHigh:3400,hrs:9.5,via:'direct'},
+  // From MEL
+  'MEL-CNS':{qfSC:120,anzSP:65,cLow:1000,cHigh:1600,hrs:3.5,via:'direct'},
+  'MEL-BNE':{qfSC:80,anzSP:45,cLow:700,cHigh:1100,hrs:2.0,via:'direct'},
+  'MEL-SYD':{qfSC:80,anzSP:45,cLow:700,cHigh:1100,hrs:1.5,via:'direct'},
+  'MEL-PER':{qfSC:160,anzSP:110,cLow:1200,cHigh:2000,hrs:4.5,via:'direct'},
+  'MEL-DPS':{qfSC:240,anzSP:140,cLow:1400,cHigh:2200,hrs:6.5,via:'direct'},
+  'MEL-ADL':{qfSC:80,anzSP:45,cLow:600,cHigh:1000,hrs:1.5,via:'direct'},
+  'MEL-NAN':{qfSC:120,anzSP:70,cLow:1100,cHigh:1800,hrs:4.0,via:'direct'},
+  'MEL-ZQN':{qfSC:100,anzSP:55,cLow:800,cHigh:1300,hrs:3.5,via:'direct'},
+  'MEL-TPE':{qfSC:200,anzSP:110,cLow:2200,cHigh:3400,hrs:9.0,via:'direct'},
+  // From BNE
+  'BNE-CNS':{qfSC:80,anzSP:45,cLow:600,cHigh:1000,hrs:2.0,via:'direct'},
+  'BNE-MEL':{qfSC:80,anzSP:45,cLow:700,cHigh:1100,hrs:2.0,via:'direct'},
+  'BNE-SYD':{qfSC:80,anzSP:45,cLow:600,cHigh:1000,hrs:1.5,via:'direct'},
+  'BNE-PER':{qfSC:160,anzSP:110,cLow:1200,cHigh:1900,hrs:5.5,via:'direct'},
+  'BNE-DPS':{qfSC:240,anzSP:140,cLow:1400,cHigh:2200,hrs:7.0,via:'direct'},
+  'BNE-ADL':{qfSC:80,anzSP:45,cLow:700,cHigh:1100,hrs:3.0,via:'direct'},
+  'BNE-NAN':{qfSC:120,anzSP:70,cLow:1100,cHigh:1700,hrs:4.0,via:'direct'},
+  'BNE-ZQN':{qfSC:100,anzSP:55,cLow:800,cHigh:1300,hrs:3.5,via:'direct'},
+  'BNE-TPE':{qfSC:200,anzSP:110,cLow:2200,cHigh:3400,hrs:9.0,via:'direct'},
+  // From PER
+  'PER-CNS':{qfSC:160,anzSP:90,cLow:1400,cHigh:2200,hrs:5.0,via:'via BNE'},
+  'PER-MEL':{qfSC:120,anzSP:70,cLow:1000,cHigh:1600,hrs:4.5,via:'direct'},
+  'PER-BNE':{qfSC:160,anzSP:90,cLow:1200,cHigh:1900,hrs:5.5,via:'direct'},
+  'PER-SYD':{qfSC:140,anzSP:80,cLow:1200,cHigh:1900,hrs:5.0,via:'direct'},
+  'PER-DPS':{qfSC:80,anzSP:50,cLow:700,cHigh:1200,hrs:3.5,via:'direct'},
+  'PER-ADL':{qfSC:80,anzSP:45,cLow:600,cHigh:1000,hrs:3.0,via:'direct'},
+  'PER-NAN':{qfSC:180,anzSP:100,cLow:1600,cHigh:2400,hrs:7.5,via:'via BNE'},
+  'PER-ZQN':{qfSC:200,anzSP:110,cLow:1800,cHigh:2800,hrs:9.0,via:'via MEL'},
+  'PER-TPE':{qfSC:200,anzSP:110,cLow:2200,cHigh:3400,hrs:8.0,via:'via SIN/KUL'},
+  // From ADL
+  'ADL-CNS':{qfSC:140,anzSP:80,cLow:1100,cHigh:1700,hrs:4.5,via:'via BNE'},
+  'ADL-MEL':{qfSC:40,anzSP:25,cLow:400,cHigh:700,hrs:1.5,via:'direct'},
+  'ADL-BNE':{qfSC:60,anzSP:35,cLow:600,cHigh:900,hrs:2.5,via:'direct'},
+  'ADL-SYD':{qfSC:60,anzSP:35,cLow:500,cHigh:800,hrs:2.0,via:'direct'},
+  'ADL-PER':{qfSC:80,anzSP:45,cLow:600,cHigh:1000,hrs:3.0,via:'direct'},
+  'ADL-DPS':{qfSC:160,anzSP:90,cLow:1200,cHigh:2000,hrs:6.5,via:'via MEL'},
+  'ADL-NAN':{qfSC:140,anzSP:80,cLow:1100,cHigh:1800,hrs:5.5,via:'via BNE'},
+  'ADL-ZQN':{qfSC:140,anzSP:80,cLow:1100,cHigh:1700,hrs:5.5,via:'via MEL or SYD'},
+  'ADL-TPE':{qfSC:200,anzSP:110,cLow:2000,cHigh:3200,hrs:9.0,via:'via SIN'},
+  // From HBA (Hobart)
+  'HBA-CNS':{qfSC:160,anzSP:90,cLow:1300,cHigh:2000,hrs:5.5,via:'via MEL or SYD'},
+  'HBA-MEL':{qfSC:30,anzSP:20,cLow:300,cHigh:600,hrs:1.0,via:'direct'},
+  'HBA-BNE':{qfSC:100,anzSP:55,cLow:800,cHigh:1300,hrs:3.5,via:'via SYD'},
+  'HBA-SYD':{qfSC:60,anzSP:35,cLow:700,cHigh:1100,hrs:2.5,via:'direct'},
+  'HBA-PER':{qfSC:160,anzSP:90,cLow:1200,cHigh:1900,hrs:5.5,via:'via MEL'},
+  'HBA-ADL':{qfSC:60,anzSP:35,cLow:600,cHigh:900,hrs:2.0,via:'via MEL'},
+  'HBA-DPS':{qfSC:180,anzSP:100,cLow:1600,cHigh:2500,hrs:8.0,via:'via MEL'},
+  'HBA-NAN':{qfSC:140,anzSP:80,cLow:1200,cHigh:1900,hrs:5.5,via:'via SYD/BNE'},
+  'HBA-ZQN':{qfSC:160,anzSP:90,cLow:1400,cHigh:2200,hrs:6.5,via:'via MEL'},
+  'HBA-TPE':{qfSC:240,anzSP:130,cLow:2400,cHigh:3800,hrs:10.5,via:'via SYD'},
+  // From CBR (Canberra)
+  'CBR-CNS':{qfSC:120,anzSP:70,cLow:1000,cHigh:1600,hrs:4.5,via:'via SYD'},
+  'CBR-MEL':{qfSC:40,anzSP:25,cLow:400,cHigh:700,hrs:1.5,via:'direct'},
+  'CBR-BNE':{qfSC:60,anzSP:35,cLow:600,cHigh:900,hrs:2.0,via:'direct'},
+  'CBR-SYD':{qfSC:30,anzSP:20,cLow:300,cHigh:600,hrs:1.0,via:'direct'},
+  'CBR-PER':{qfSC:140,anzSP:80,cLow:1100,cHigh:1800,hrs:5.0,via:'via SYD'},
+  'CBR-ADL':{qfSC:60,anzSP:35,cLow:500,cHigh:800,hrs:2.0,via:'via SYD'},
+  'CBR-DPS':{qfSC:180,anzSP:100,cLow:1600,cHigh:2500,hrs:8.0,via:'via SYD'},
+  'CBR-NAN':{qfSC:140,anzSP:80,cLow:1200,cHigh:1800,hrs:5.5,via:'via SYD/BNE'},
+  'CBR-ZQN':{qfSC:140,anzSP:80,cLow:1100,cHigh:1700,hrs:5.0,via:'via SYD or MEL'},
+  'CBR-TPE':{qfSC:220,anzSP:120,cLow:2300,cHigh:3600,hrs:10.0,via:'via SYD'},
+  // From DRW (Darwin)
+  'DRW-CNS':{qfSC:60,anzSP:35,cLow:600,cHigh:900,hrs:2.5,via:'direct'},
+  'DRW-MEL':{qfSC:140,anzSP:80,cLow:1100,cHigh:1700,hrs:5.5,via:'direct'},
+  'DRW-BNE':{qfSC:120,anzSP:70,cLow:1000,cHigh:1600,hrs:4.5,via:'direct'},
+  'DRW-SYD':{qfSC:120,anzSP:70,cLow:1100,cHigh:1700,hrs:5.0,via:'direct'},
+  'DRW-PER':{qfSC:100,anzSP:60,cLow:900,cHigh:1400,hrs:4.0,via:'direct'},
+  'DRW-ADL':{qfSC:120,anzSP:70,cLow:1000,cHigh:1600,hrs:4.5,via:'direct'},
+  'DRW-DPS':{qfSC:60,anzSP:35,cLow:500,cHigh:900,hrs:2.5,via:'direct'},
+  'DRW-NAN':{qfSC:160,anzSP:90,cLow:1400,cHigh:2200,hrs:6.5,via:'via BNE'},
+  'DRW-ZQN':{qfSC:180,anzSP:100,cLow:1600,cHigh:2500,hrs:8.0,via:'via MEL or SYD'},
+  'DRW-TPE':{qfSC:160,anzSP:90,cLow:1800,cHigh:2800,hrs:6.0,via:'via SIN'},
+  // ══ NORTH AMERICA — US & Canada conference destinations ══
+  // Note: All >4h from NZ, CME-eligible. Costs NZD est. return Business J.
+  // QF operates AKL/SYD/BNE/MEL→LAX direct; other US cities via AA codeshare.
+  // From AKL
+  'AKL-LAX':{qfSC:500,anzSP:260,cLow:5500,cHigh:9000,hrs:13.0,via:'direct (QF94/93)'},
+  'AKL-ORD':{qfSC:600,anzSP:310,cLow:8000,cHigh:14000,hrs:17.5,via:'via LAX (QF+AA)'},
+  'AKL-MSY':{qfSC:640,anzSP:330,cLow:8500,cHigh:15000,hrs:18.0,via:'via LAX (QF+AA)'},
+  'AKL-YVR':{qfSC:520,anzSP:270,cLow:7000,cHigh:12000,hrs:14.0,via:'via AKL–SYD–YVR or direct Air NZ/QF'},
+  'AKL-BOS':{qfSC:680,anzSP:350,cLow:9000,cHigh:16000,hrs:19.0,via:'via LAX (QF+AA)'},
+  // From WLG
+  'WLG-LAX':{qfSC:500,anzSP:260,cLow:6000,cHigh:10000,hrs:14.0,via:'via AKL or SYD'},
+  'WLG-ORD':{qfSC:620,anzSP:320,cLow:8500,cHigh:15000,hrs:18.5,via:'via AKL/LAX'},
+  'WLG-MSY':{qfSC:660,anzSP:340,cLow:9000,cHigh:15500,hrs:19.0,via:'via AKL/LAX'},
+  'WLG-YVR':{qfSC:540,anzSP:280,cLow:7500,cHigh:12500,hrs:15.0,via:'via AKL'},
+  'WLG-BOS':{qfSC:700,anzSP:360,cLow:9500,cHigh:16500,hrs:20.0,via:'via AKL/LAX'},
+  // From CHC
+  'CHC-LAX':{qfSC:500,anzSP:260,cLow:5800,cHigh:9500,hrs:14.0,via:'via AKL or SYD'},
+  'CHC-ORD':{qfSC:600,anzSP:310,cLow:8200,cHigh:14200,hrs:18.0,via:'via AKL/LAX'},
+  'CHC-MSY':{qfSC:640,anzSP:330,cLow:8700,cHigh:15000,hrs:18.5,via:'via AKL/LAX'},
+  'CHC-YVR':{qfSC:520,anzSP:270,cLow:7200,cHigh:12200,hrs:14.5,via:'via AKL'},
+  'CHC-BOS':{qfSC:680,anzSP:350,cLow:9200,cHigh:16000,hrs:19.5,via:'via AKL/LAX'},
+  // From SYD
+  'SYD-LAX':{qfSC:460,anzSP:240,cLow:4500,cHigh:8000,hrs:14.0,via:'direct (QF)'},
+  'SYD-ORD':{qfSC:580,anzSP:300,cLow:6000,cHigh:11000,hrs:18.0,via:'via LAX (QF+AA)'},
+  'SYD-MSY':{qfSC:620,anzSP:320,cLow:6500,cHigh:12000,hrs:18.5,via:'via LAX (QF+AA)'},
+  'SYD-YVR':{qfSC:500,anzSP:260,cLow:5500,cHigh:10000,hrs:16.5,via:'via LAX or direct AC'},
+  'SYD-BOS':{qfSC:660,anzSP:340,cLow:7000,cHigh:13000,hrs:20.0,via:'via LAX (QF+AA)'},
+  // From MEL
+  'MEL-LAX':{qfSC:480,anzSP:250,cLow:4800,cHigh:8500,hrs:15.5,via:'direct (QF)'},
+  'MEL-ORD':{qfSC:600,anzSP:310,cLow:6500,cHigh:11500,hrs:19.0,via:'via LAX (QF+AA)'},
+  'MEL-MSY':{qfSC:640,anzSP:330,cLow:7000,cHigh:12500,hrs:20.0,via:'via LAX (QF+AA)'},
+  'MEL-YVR':{qfSC:520,anzSP:270,cLow:6000,cHigh:10500,hrs:17.0,via:'via LAX or SYD'},
+  'MEL-BOS':{qfSC:680,anzSP:350,cLow:7500,cHigh:14000,hrs:21.5,via:'via LAX (QF+AA)'},
+  // From BNE
+  'BNE-LAX':{qfSC:460,anzSP:240,cLow:4200,cHigh:7500,hrs:13.5,via:'direct (QF)'},
+  'BNE-ORD':{qfSC:580,anzSP:300,cLow:5500,cHigh:10500,hrs:17.5,via:'via LAX (QF+AA)'},
+  'BNE-MSY':{qfSC:620,anzSP:320,cLow:6000,cHigh:11000,hrs:18.0,via:'via LAX (QF+AA)'},
+  'BNE-YVR':{qfSC:500,anzSP:260,cLow:5000,cHigh:9500,hrs:16.0,via:'via LAX or SYD'},
+  'BNE-BOS':{qfSC:660,anzSP:340,cLow:7000,cHigh:12500,hrs:19.5,via:'via LAX (QF+AA)'},
+  // From PER
+  'PER-LAX':{qfSC:520,anzSP:270,cLow:5500,cHigh:10000,hrs:19.0,via:'via SYD (QF)'},
+  'PER-ORD':{qfSC:680,anzSP:350,cLow:7000,cHigh:13000,hrs:23.0,via:'via SYD/LAX'},
+  'PER-MSY':{qfSC:720,anzSP:370,cLow:7500,cHigh:14000,hrs:24.0,via:'via SYD/LAX'},
+  'PER-YVR':{qfSC:620,anzSP:320,cLow:6500,cHigh:12000,hrs:21.0,via:'via SYD'},
+  'PER-BOS':{qfSC:760,anzSP:390,cLow:8000,cHigh:15000,hrs:25.0,via:'via SYD/LAX'},
+  // ══ UK / EUROPE — conference destinations ══
+  // All >4h from NZ & AU — Business CME-eligible from NZ origins.
+  // PER has direct QF9/10 to LHR (17.5h) — major advantage over other AU origins.
+  // Costs NZD est. return Business J.
+  // From AKL
+  'AKL-LHR':{qfSC:700,anzSP:360,cLow:14000,cHigh:22000,hrs:24.0,via:'via SIN or DXB (QF/SQ/EK)'},
+  'AKL-GLA':{qfSC:720,anzSP:370,cLow:15000,cHigh:23000,hrs:25.5,via:'via LHR + domestic (QF+BA)'},
+  'AKL-MAN':{qfSC:720,anzSP:370,cLow:15000,cHigh:23000,hrs:25.0,via:'via LHR + domestic (QF+BA)'},
+  'AKL-CDG':{qfSC:700,anzSP:360,cLow:14000,cHigh:22000,hrs:24.5,via:'via SIN or DXB (AF/SQ/EK)'},
+  // From WLG
+  'WLG-LHR':{qfSC:720,anzSP:370,cLow:15000,cHigh:23000,hrs:25.0,via:'via AKL + SIN/DXB'},
+  'WLG-GLA':{qfSC:740,anzSP:380,cLow:16000,cHigh:24000,hrs:26.5,via:'via LHR + domestic'},
+  'WLG-MAN':{qfSC:740,anzSP:380,cLow:16000,cHigh:24000,hrs:26.0,via:'via LHR + domestic'},
+  'WLG-CDG':{qfSC:720,anzSP:370,cLow:15000,cHigh:23000,hrs:25.5,via:'via AKL + SIN/DXB'},
+  // From CHC
+  'CHC-LHR':{qfSC:720,anzSP:370,cLow:15000,cHigh:23000,hrs:25.0,via:'via AKL + SIN/DXB'},
+  'CHC-GLA':{qfSC:740,anzSP:380,cLow:16000,cHigh:24000,hrs:26.5,via:'via LHR + domestic'},
+  'CHC-MAN':{qfSC:740,anzSP:380,cLow:16000,cHigh:24000,hrs:26.0,via:'via LHR + domestic'},
+  'CHC-CDG':{qfSC:720,anzSP:370,cLow:15000,cHigh:23000,hrs:25.5,via:'via AKL + SIN/DXB'},
+  // From SYD
+  'SYD-LHR':{qfSC:660,anzSP:340,cLow:10000,cHigh:18000,hrs:22.0,via:'via SIN (QF1) or DXB (EK)'},
+  'SYD-GLA':{qfSC:680,anzSP:350,cLow:11000,cHigh:19000,hrs:23.5,via:'via LHR + domestic'},
+  'SYD-MAN':{qfSC:680,anzSP:350,cLow:11000,cHigh:19000,hrs:23.0,via:'via LHR + domestic'},
+  'SYD-CDG':{qfSC:660,anzSP:340,cLow:10000,cHigh:18000,hrs:22.5,via:'via SIN or DXB (AF/SQ/EK)'},
+  // From MEL
+  'MEL-LHR':{qfSC:680,anzSP:350,cLow:11000,cHigh:19000,hrs:23.0,via:'via SIN (QF) or DXB (EK)'},
+  'MEL-GLA':{qfSC:700,anzSP:360,cLow:12000,cHigh:20000,hrs:24.5,via:'via LHR + domestic'},
+  'MEL-MAN':{qfSC:700,anzSP:360,cLow:12000,cHigh:20000,hrs:24.0,via:'via LHR + domestic'},
+  'MEL-CDG':{qfSC:680,anzSP:350,cLow:11000,cHigh:19000,hrs:23.5,via:'via SIN or DXB (AF/SQ/EK)'},
+  // From BNE
+  'BNE-LHR':{qfSC:660,anzSP:340,cLow:10000,cHigh:18000,hrs:23.0,via:'via SIN or DXB (QF/SQ/EK)'},
+  'BNE-GLA':{qfSC:680,anzSP:350,cLow:11000,cHigh:19000,hrs:24.5,via:'via LHR + domestic'},
+  'BNE-MAN':{qfSC:680,anzSP:350,cLow:11000,cHigh:19000,hrs:24.0,via:'via LHR + domestic'},
+  'BNE-CDG':{qfSC:660,anzSP:340,cLow:10000,cHigh:18000,hrs:23.5,via:'via SIN or DXB (AF/SQ/EK)'},
+  // From PER — note QF9/QF10 direct PER-LHR (~17.5h) — shortest AU-UK route!
+  'PER-LHR':{qfSC:580,anzSP:300,cLow:9000,cHigh:16000,hrs:17.5,via:'direct QF9/QF10 (Perth–London)'},
+  'PER-GLA':{qfSC:600,anzSP:310,cLow:10000,cHigh:17000,hrs:19.0,via:'via LHR + domestic (QF9+BA)'},
+  'PER-MAN':{qfSC:600,anzSP:310,cLow:10000,cHigh:17000,hrs:18.5,via:'via LHR + domestic (QF9+BA)'},
+  'PER-CDG':{qfSC:580,anzSP:300,cLow:9000,cHigh:16500,hrs:18.0,via:'via SIN or via LHR (QF9+Eurostar)'}
+};
+
+const FARE_CLASSES = [
+  {code:'J',label:'Business Full (J/C)',qfM:1.0,anzM:1.0,costM:1.0,desc:'Full Business — maximum SC earn on every sector'},
+  {code:'D',label:'Business Saver (D/U)',qfM:0.75,anzM:0.60,costM:0.75,desc:'Business Saver — discounted earn, still good value per dollar'},
+  {code:'W',label:'Premium Economy (W/P)',qfM:0.50,anzM:0.50,costM:0.45,desc:'Premium Economy — mid-tier earn, comfortable cabin'},
+  {code:'Y',label:'Economy Flex (Y/B)',qfM:0.25,anzM:0.25,costM:0.18,desc:'Economy Flexible — lower earn but far cheaper; best for short hops'},
+  {code:'E',label:'Economy Sale (E/T)',qfM:0.0625,anzM:0.05,costM:0.08,desc:'Economy Sale / Red e-Deal — minimal earn (~5%), use only if budget is the sole priority'}
+];
+
+const CAT_TAGS = {
+  'Emergency Medicine':'tag-em','Critical Care':'tag-icu','Trauma':'tag-trauma',
+  'Trauma (International)':'tag-trauma',
+  'Rural Medicine':'tag-rural','Radiology':'tag-rad','Ultrasound':'tag-us','Acute Medicine':'tag-rural',
+  'Indigenous Health':'tag-rural',
+  'Paediatric Emergency Medicine':'tag-pem',
+  'Health Management':'tag-mgmt',
+  'ACEM':'tag-acem'
+};
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let budget = 9000;
+let tripItems = []; // {id, confId, confName, route, fareClass, flightCostLow, flightCostHigh, flightCostMid, qfSC, anzSP, accomCost, accomNights, accomRate}
+let lastQuote = null; // store last generated quote for adding to trip
+
+// ══════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════
+function fmtCurrency(n){return'NZD $'+n.toLocaleString('en-NZ')}
+function getOrigin(){return document.getElementById('origin-select').value}
+function getQOrigin(){return document.getElementById('q-origin').value}
+function getRoute(origin, airport){return ROUTES[origin+'-'+airport]||null}
+function getFareClass(code){return FARE_CLASSES.find(f=>f.code===code)||FARE_CLASSES[0]}
+function daysBetween(d1,d2){return Math.round((new Date(d2)-new Date(d1))/(1000*60*60*24))}
+function flightHrsBetween(airport1,airport2,origin){
+  // Very rough estimate: use route hours from origin for both
+  const r1=getRoute(origin,airport1);
+  const r2=getRoute(origin,airport2);
+  if(!r1||!r2)return 99;
+  return Math.abs(r1.hrs-r2.hrs)*1.5; // rough inter-city estimate
+}
+
+function getAdjacentConferences(conf){
+  const results=[];
+  const confEnd=new Date(conf.endDate);
+  CONFERENCES.forEach(other=>{
+    if(other.id===conf.id)return;
+    const otherStart=new Date(other.startDate);
+    const gap=daysBetween(conf.endDate,other.startDate);
+    if(gap>=0&&gap<=7){
+      // Flight time between cities — use a simple matrix
+      const ftKey=conf.airport+'-'+other.airport;
+      const ftRev=other.airport+'-'+conf.airport;
+      const ft = INTER_CITY_HOURS[ftKey]||INTER_CITY_HOURS[ftRev]||99;
+      if(ft<3){
+        results.push({conf:other,gap,flightHrs:ft});
+      }
+    }
+  });
+  return results;
+}
+
+// Inter-city flight times (one-way, hours)
+const INTER_CITY_HOURS = {
+  'MEL-BNE':2.0,'BNE-MEL':2.0,
+  'SYD-MEL':1.5,'MEL-SYD':1.5,
+  'SYD-BNE':1.5,'BNE-SYD':1.5,
+  'SYD-ADL':2.0,'ADL-SYD':2.0,
+  'MEL-ADL':1.5,'ADL-MEL':1.5,
+  'BNE-ADL':3.0,'ADL-BNE':3.0,
+  'SYD-CNS':3.0,'CNS-SYD':3.0,
+  'BNE-CNS':2.0,'CNS-BNE':2.0,
+  'MEL-CNS':3.5,'CNS-MEL':3.5,
+  'PER-MEL':4.5,'MEL-PER':4.5,
+  'PER-SYD':5.0,'SYD-PER':5.0,
+  'PER-BNE':5.5,'BNE-PER':5.5,
+  'PER-ADL':3.0,'ADL-PER':3.0,
+  'DPS-SYD':6.0,'SYD-DPS':6.0,
+  'DPS-MEL':6.5,'MEL-DPS':6.5,
+  'DPS-BNE':7.0,'BNE-DPS':7.0,
+  'DPS-PER':3.5,'PER-DPS':3.5,
+  'DPS-DRW':2.5,'DRW-DPS':2.5,
+  'NAN-SYD':3.5,'SYD-NAN':3.5,
+  'NAN-MEL':4.0,'MEL-NAN':4.0,
+  'NAN-BNE':4.0,'BNE-NAN':4.0,
+  // New AU hub routes
+  'DRW-CNS':2.5,'CNS-DRW':2.5,
+  'DRW-BNE':4.5,'BNE-DRW':4.5,
+  'DRW-SYD':5.0,'SYD-DRW':5.0,
+  'DRW-MEL':5.5,'MEL-DRW':5.5,
+  'DRW-PER':4.0,'PER-DRW':4.0,
+  'DRW-ADL':4.5,'ADL-DRW':4.5,
+  'HBA-MEL':1.0,'MEL-HBA':1.0,
+  'HBA-SYD':2.5,'SYD-HBA':2.5,
+  'HBA-BNE':3.5,'BNE-HBA':3.5,
+  'CBR-SYD':1.0,'SYD-CBR':1.0,
+  'CBR-MEL':1.5,'MEL-CBR':1.5,
+  'CBR-BNE':2.0,'BNE-CBR':2.0,
+  // ZQN (Queenstown NZ) connections
+  'ZQN-SYD':3.0,'SYD-ZQN':3.0,
+  'ZQN-MEL':3.5,'MEL-ZQN':3.5,
+  'ZQN-BNE':3.5,'BNE-ZQN':3.5,
+  // UK / Europe inter-city connections (used for adjacent conference detection)
+  'LHR-GLA':1.5,'GLA-LHR':1.5,
+  'LHR-MAN':1.0,'MAN-LHR':1.0,
+  'LHR-CDG':1.5,'CDG-LHR':1.5,
+  'GLA-MAN':1.0,'MAN-GLA':1.0,
+  'GLA-CDG':2.0,'CDG-GLA':2.0,
+  'MAN-CDG':2.0,'CDG-MAN':2.0,
+};
+
+function buildFlightLinks(origin, airport, startDate, endDate){
+  // Outbound: day before conference starts (fly in the day before)
+  const d1=new Date(startDate+'T00:00:00');
+  d1.setDate(d1.getDate()-1);
+  const dd1=String(d1.getDate()).padStart(2,'0');
+  const mm1=String(d1.getMonth()+1).padStart(2,'0');
+  const yy1=String(d1.getFullYear()).slice(-2);
+  const yyyy1=d1.getFullYear();
+  const iso1=`${yyyy1}-${mm1}-${dd1}`;
+  const yymmdd1=`${yy1}${mm1}${dd1}`;
+  const yyyymmdd1=`${yyyy1}${mm1}${dd1}`;
+
+  // Return: day after conference ends (or startDate+1 if no endDate)
+  const d2=new Date((endDate||startDate)+'T00:00:00');
+  d2.setDate(d2.getDate()+1);
+  const dd2=String(d2.getDate()).padStart(2,'0');
+  const mm2=String(d2.getMonth()+1).padStart(2,'0');
+  const yy2=String(d2.getFullYear()).slice(-2);
+  const yyyy2=d2.getFullYear();
+  const iso2=`${yyyy2}-${mm2}-${dd2}`;
+  const yymmdd2=`${yy2}${mm2}${dd2}`;
+  const yyyymmdd2=`${yyyy2}${mm2}${dd2}`;
+
+  const from=origin.toLowerCase(), to=airport.toLowerCase();
+  const FROM=origin, TO=airport;
+  // Month abbreviations for Air NZ legacy booking engine (DDMonYYYY format)
+  const MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const mon1=MONTHS[d1.getMonth()];
+  const mon2=MONTHS[d2.getMonth()];
+  return {
+    // Skyscanner: lowercase IATA, YYMMDD dates — confirmed working
+    skyscanner:`https://www.skyscanner.net/transport/flights/${from}/${to}/${yymmdd1}/${yymmdd2}/`,
+    // Google Flights: semicolon-separated hash params
+    google:`https://www.google.com/flights#search;f=${FROM};t=${TO};d=${iso1};r=${iso2};c:NZD;e:1;sd:1;t:f`,
+    // Webjet: ISO date query params
+    webjet:`https://www.webjet.com.au/flights/?from=${FROM}&to=${TO}&departure=${iso1}&return=${iso2}&adults=1&triptype=return`,
+    // Air NZ legacy booking engine — DDMonYYYY format (e.g. 17AUG2026)
+    airnz:`https://flightbookings.airnewzealand.co.nz/vbook/actions/search?org0=${FROM}&dst0=${TO}&dep0=${dd1}${mon1}${yyyy1}&ret0=${dd2}${mon2}${yyyy2}&adt=1&tns=1`,
+    // Qantas: /au/en/ path with ISO dates
+    qantas:`https://www.qantas.com/au/en/book-a-trip/flights/search?adults=1&departureDate=${iso1}&returnDate=${iso2}&destinationAirportCode=${TO}&flightType=R&originAirportCode=${FROM}`
+  };
+}
+
+// ══════════════════════════════════════════════════════
+//  DSC PANEL TOGGLE
+// ══════════════════════════════════════════════════════
+function toggleDSC(){
+  const body=document.getElementById('dsc-body');
+  const chevron=document.getElementById('dsc-chevron');
+  const open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  chevron.textContent=open?'▲':'▼';
+}
+
+function toggleStatusMode(){
+  const off=document.body.classList.toggle('no-status');
+  const btn=document.getElementById('status-toggle');
+  btn.textContent=off?'📋 CME Only':'⚡ Status Run: ON';
+  btn.classList.toggle('cme-only',off);
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER CARDS (BROWSE MODE)
+// ══════════════════════════════════════════════════════
+function renderCards(){
+  const origin=getOrigin();
+  const search=(document.getElementById('search-input').value||'').toLowerCase();
+  const cat=document.getElementById('cat-filter').value;
+  const hideHols=document.getElementById('hide-hols').checked;
+  const yearFilter=document.getElementById('year-filter')?document.getElementById('year-filter').value:'';
+  const monthFilter=document.getElementById('month-filter')?document.getElementById('month-filter').value:'';
+
+  let list=CONFERENCES.filter(c=>{
+    if(hideHols&&c.schoolHoliday)return false;
+    if(cat&&c.category!==cat)return false;
+    if(yearFilter&&!c.startDate.startsWith(yearFilter))return false;
+    if(monthFilter&&c.startDate.slice(5,7)!==monthFilter)return false;
+    if(search&&!(c.name.toLowerCase().includes(search)||c.city.toLowerCase().includes(search)||c.category.toLowerCase().includes(search)))return false;
+    return true;
+  });
+
+  document.getElementById('results-count').textContent=list.length+' conference'+(list.length!==1?'s':'');
+
+  const grid=document.getElementById('conference-grid');
+  grid.innerHTML='';
+  list.forEach(c=>{
+    const route=getRoute(origin,c.airport);
+    const adj=getAdjacentConferences(c);
+    const links=c.virtual?{}:buildFlightLinks(origin,c.airport,c.startDate,c.endDate);
+    const inTrip=tripItems.some(t=>t.confId===c.id);
+
+    const adjHtml=adj.length?`
+      <div class="adjacent-section">
+        <div class="adj-label">Adjacent conferences (≤7 days, &lt;3hr flight):</div>
+        ${adj.map(a=>`<span class="adj-badge" title="${a.gap} days away, ~${a.flightHrs}hr flight" onclick="scrollToCard('${a.conf.id}')">→ ${a.conf.name} (${formatDate(a.conf.startDate)})</span>`).join('')}
+      </div>`:'';
+
+    const scBusiness=route?Math.round(route.qfSC):'?';
+    const scEconomy=route?Math.round(route.qfSC*0.25):'?';
+    const costLow=route?route.cLow:'?';
+    const costHigh=route?route.cHigh:'?';
+    const catTag=CAT_TAGS[c.category]||'tag-em';
+    const isNZOrigin=['AKL','WLG','CHC'].includes(origin);
+    const cmeEligible=(route&&isNZOrigin)?route.hrs>4:null;
+    const cmeBadge=cmeEligible===null?'':(cmeEligible
+      ?`<span class="cme-ok">✅ Business CME-deductible (NZ) — ${route.hrs}h &gt; 4h</span>`
+      :`<span class="cme-warn">⚠️ Business NOT CME-deductible (NZ) — ${route.hrs}h ≤ 4h — use Economy</span>`);
+
+    const estBadge=c.estimated?`<span class="est-badge">EST</span>`:'';
+    const intlBadge=c.international?`<span class="intl-badge">INTL</span>`:'';
+
+    // Virtual / online events — simplified card, no flight info
+    if(c.virtual){
+      grid.innerHTML+=`
+    <div class="conf-card" id="card-${c.id}" style="border-left:4px solid #38bdf8">
+      <div class="card-header">
+        <div class="card-title">🌐 ${c.name}${estBadge}</div>
+        <div><span class="cat-badge">${c.category}</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="meta-item"><span class="icon">🌐</span>Online — Webinar</span>
+          <span class="meta-item"><span class="icon">📅</span>${formatDateRange(c.startDate,c.endDate)}</span>
+        </div>
+        <div class="virtual-info">🌐 <strong>Online — no travel required.</strong> Attend from anywhere. Register via ACEM website.</div>
+        <p style="font-size:11px;color:var(--grey-500);margin-bottom:8px;line-height:1.5">${c.desc}</p>
+        <div class="card-actions" style="margin-top:10px">
+          <a href="${c.url}" target="_blank" class="btn btn-primary btn-sm">Register / ACEM site ↗</a>
+        </div>
+      </div>
+    </div>`;
+      return;
+    }
+
+    grid.innerHTML+=`
+    <div class="conf-card${c.schoolHoliday?' holiday-card':''}" id="card-${c.id}">
+      <div class="card-header">
+        <div class="card-title">${c.name}${estBadge}${intlBadge}</div>
+        <div><span class="cat-badge">${c.category}</span></div>
+      </div>
+      <div class="card-body">
+        ${c.schoolHoliday?`<div class="holiday-warn">⚠️ <span>${c.scholNote}</span></div>`:''}
+        ${c.estimated?`<div style="background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:5px 9px;font-size:11px;color:#713f12;margin-bottom:8px">📌 <strong>Estimated date</strong> — based on prior year timing. Verify on the conference website before booking flights.</div>`:''}
+        <div class="card-meta">
+          <span class="meta-item"><span class="icon">📍</span>${c.city}, ${c.state}</span>
+          <span class="meta-item"><span class="icon">📅</span>${formatDateRange(c.startDate,c.endDate)}</span>
+        </div>
+        <p style="font-size:11px;color:var(--grey-500);margin-bottom:8px;line-height:1.5">${c.desc}</p>
+        ${route?`<div class="flight-info">
+          <div class="flight-row"><span class="flight-label">✈ From ${origin} (${route.via}):</span><span style="font-weight:700">${route.hrs}h</span></div>
+          <div class="flight-row"><span class="flight-label">Business return (est.):</span><span class="sc-value">${fmtCurrency(costLow)}–${fmtCurrency(costHigh)}</span></div>
+          <div class="flight-row status-only"><span class="flight-label">QF SCs — Business:</span><span class="sc-value">${scBusiness} SCs (${Math.round(scBusiness/700*100)}% of Gold)</span></div>
+          <div class="flight-row status-only"><span class="flight-label">QF SCs — Economy Flex:</span><span style="color:var(--grey-600);font-weight:600">${scEconomy} SCs</span></div>
+          <div>${cmeBadge}</div>
+        </div>`:`<div class="flight-info"><span style="color:var(--grey-400);font-size:12px">No direct route data from ${origin}. Try a different origin.</span></div>`}
+        ${adjHtml}
+        <div class="flight-links">
+          <a href="${links.skyscanner}" target="_blank" class="flight-link fl-skyscanner">Skyscanner</a>
+          <a href="${links.google}" target="_blank" class="flight-link fl-google">Google Flights</a>
+          <a href="${links.webjet}" target="_blank" class="flight-link fl-webjet">Webjet</a>
+          <a href="${links.airnz}" target="_blank" class="flight-link fl-airnz">Air NZ</a>
+          <a href="${links.qantas}" target="_blank" class="flight-link fl-qantas">Qantas</a>
+        </div>
+        <div class="card-actions" style="margin-top:10px">
+          <a href="${c.url}" target="_blank" class="btn btn-outline btn-sm">Conference site ↗</a>
+          <button class="btn btn-primary btn-sm" onclick="quickAddToTrip('${c.id}')">${inTrip?'✓ Added':'＋ Add to Trip'}</button>
+          <button class="btn btn-outline btn-sm" onclick="openQuoteForConf('${c.id}')">✦ Quote</button>
+        </div>
+      </div>
+    </div>`;
+  });
+}
+
+function scrollToCard(id){
+  document.getElementById('card-'+id)?.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function formatDate(d){
+  const dt=new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('en-NZ',{day:'numeric',month:'short'});
+}
+function formatDateRange(s,e){
+  const ds=new Date(s+'T00:00:00'),de=new Date(e+'T00:00:00');
+  const ms=ds.toLocaleDateString('en-NZ',{day:'numeric',month:'short'});
+  const me=de.toLocaleDateString('en-NZ',{day:'numeric',month:'short',year:'numeric'});
+  return ms+' – '+me;
+}
+
+// ══════════════════════════════════════════════════════
+//  QUOTE MODE
+// ══════════════════════════════════════════════════════
+function populateQuoteConferences(){
+  const sel=document.getElementById('q-conference');
+  const qYear=document.getElementById('q-year-filter')?document.getElementById('q-year-filter').value:'';
+  const qMonth=document.getElementById('q-month-filter')?document.getElementById('q-month-filter').value:'';
+  sel.innerHTML='<option value="">— Select a conference —</option>';
+  const sorted=[...CONFERENCES]
+    .filter(c=>!c.virtual)
+    .filter(c=>!qYear||c.startDate.startsWith(qYear))
+    .filter(c=>!qMonth||c.startDate.slice(5,7)===qMonth)
+    .sort((a,b)=>a.startDate.localeCompare(b.startDate));
+  if(sorted.length===0){
+    sel.innerHTML+='<option value="" disabled>— No conferences match this filter —</option>';
+  }
+  sorted.forEach(c=>{
+    const est=c.estimated?' (est.)':'';
+    sel.innerHTML+=`<option value="${c.id}">${formatDateRange(c.startDate,c.endDate)} — ${c.name}${est} · ${c.city}</option>`;
+  });
+}
+
+function updateFareSCRates(){
+  const origin=getQOrigin();
+  const confId=document.getElementById('q-conference').value;
+  const selectedFC=document.getElementById('q-fareclass').value;
+  const conf=CONFERENCES.find(c=>c.id===confId);
+  const body=document.getElementById('sc-rates-body');
+  body.innerHTML='';
+  if(!conf)return;
+  const route=getRoute(origin,conf.airport);
+  if(!route){body.innerHTML='<div style="padding:8px 10px;font-size:11px;color:var(--grey-400)">No route data for this origin/destination pair.</div>';return;}
+  const isNZOrigin=['AKL','WLG','CHC'].includes(origin);
+  const cmeOk=route.hrs>4;
+  FARE_CLASSES.forEach(fc=>{
+    const qf=Math.round(route.qfSC*fc.qfM);
+    const anz=Math.round(route.anzSP*fc.anzM);
+    const isSelected=fc.code===selectedFC;
+    const isBusiness=fc.code==='J'||fc.code==='D';
+    let cmeCell;
+    if(!isNZOrigin){
+      cmeCell=isBusiness?`<span style="color:var(--grey-400);font-size:10px">ATO rules apply</span>`:`<span style="color:var(--grey-400)">N/A</span>`;
+    } else {
+      cmeCell=isBusiness
+        ?(cmeOk?`<span style="color:#065f46;font-weight:700">✅ Eligible</span>`:`<span style="color:#92400e;font-weight:700">⚠️ Not eligible</span>`)
+        :`<span style="color:var(--grey-400)">N/A</span>`;
+    }
+    body.innerHTML+=`<div class="sc-rates-row" style="${isSelected?'background:var(--teal-light);font-weight:700':''}" onclick="document.getElementById('q-fareclass').value='${fc.code}';updateFareSCRates()">
+      <span>${fc.label}</span><span style="color:var(--gold)">${qf} SCs</span><span style="color:var(--teal-dark)">~${anz} SPs</span>${cmeCell}
+    </div>`;
+  });
+}
+
+function generateQuote(){
+  const origin=getQOrigin();
+  const confId=document.getElementById('q-conference').value;
+  const fcCode=document.getElementById('q-fareclass').value;
+  if(!confId){alert('Please select a conference.');return;}
+  const conf=CONFERENCES.find(c=>c.id===confId);
+  const fc=getFareClass(fcCode);
+  const route=getRoute(origin,conf.airport);
+  if(!route){alert('No route data available for this origin/destination. Try a different origin.');return;}
+
+  const qfSC=Math.round(route.qfSC*fc.qfM);
+  const anzSP=Math.round(route.anzSP*fc.anzM);
+  const cLow=Math.round(route.cLow*fc.costM);
+  const cHigh=Math.round(route.cHigh*fc.costM);
+  const cMid=Math.round((cLow+cHigh)/2);
+
+  lastQuote={origin,conf,fc,route,qfSC,anzSP,cLow,cHigh,cMid};
+
+  const qfPct=Math.min(Math.round(qfSC/700*100),100);
+  const anzPct=Math.min(Math.round(anzSP/900*100),100);
+  const links=buildFlightLinks(origin,conf.airport,conf.startDate,conf.endDate);
+
+  document.getElementById('qr-title').textContent=conf.name;
+  document.getElementById('qr-route').textContent=`${origin} → ${conf.airport} (${route.via}) — ${fc.label}`;
+  document.getElementById('qr-cost').textContent=`${fmtCurrency(cLow)} – ${fmtCurrency(cHigh)}`;
+  document.getElementById('qr-qf-sc').textContent=qfSC+' SCs';
+  document.getElementById('qr-anz-sc').textContent='~'+anzSP+' SPs';
+  document.getElementById('qr-qf-bar').style.width=qfPct+'%';
+  document.getElementById('qr-anz-bar').style.width=anzPct+'%';
+  document.getElementById('qr-qf-pct').textContent=qfPct+'% of Qantas Gold (700 SCs)';
+  document.getElementById('qr-anz-pct').textContent=anzPct+'% of Air NZ Koru Gold (900 SPs)';
+  document.getElementById('qr-qf-note').textContent=qfSC>=700?'🥇 Enough for Gold in one trip!':qfSC>=350?'💛 Good run — combine with another trip for Gold':'';
+  document.getElementById('qr-anz-note').textContent=anzSP>=900?'🥇 Enough for Gold!':'';
+  document.getElementById('qr-earn-note').textContent=fc.desc+'. '+route.via.charAt(0).toUpperCase()+route.via.slice(1)+'. Est. flight time: '+route.hrs+'h each way.';
+
+  // NZ CME Business class rule: only flights > 4 hours qualify (NZ-origin only)
+  const cmeEl=document.getElementById('qr-cme-note');
+  const isBizFare=fcCode==='J'||fcCode==='D';
+  const isNZOriginQ=['AKL','WLG','CHC'].includes(origin);
+  const cmeOk=route.hrs>4;
+  if(isBizFare && isNZOriginQ){
+    cmeEl.style.display='block';
+    if(cmeOk){
+      cmeEl.className='cme-alert-box ok';
+      cmeEl.innerHTML=`✅ <strong>NZ CME rule: Business class eligible</strong> — this route is ${route.hrs}h (>4h threshold), so Business class is claimable as a CME/CPD expense under NZ IRD guidelines. Always confirm with your accountant.`;
+    } else {
+      cmeEl.className='cme-alert-box warn';
+      cmeEl.innerHTML=`⚠️ <strong>NZ CME rule: Business class NOT eligible</strong> — this route is only ${route.hrs}h (≤4h threshold). Under NZ IRD guidelines, only Economy class is claimable as a CME expense on flights ≤4 hours. Upgrading to Business is a personal cost. <strong>Consider Economy Flex instead</strong> — you still earn ${Math.round(route.qfSC*0.25)} QF SCs and the full cost is deductible.`;
+    }
+  } else if(isBizFare && !isNZOriginQ){
+    cmeEl.style.display='block';
+    cmeEl.className='cme-alert-box';
+    cmeEl.style.background='#f0f4ff';
+    cmeEl.style.borderColor='#c7d2fe';
+    cmeEl.style.color='#3730a3';
+    cmeEl.innerHTML=`ℹ️ <strong>AU origin: ATO rules apply</strong> — NZ IRD CME rules don't apply here. Under Australian ATO guidelines, Business class travel may be deductible regardless of flight duration if required for work. Confirm with your tax adviser.`;
+  } else {
+    cmeEl.style.display='none';
+  }
+
+  document.getElementById('qr-skyscanner').href=links.skyscanner;
+  document.getElementById('qr-google').href=links.google;
+  document.getElementById('qr-webjet').href=links.webjet;
+
+  // Populate accommodation
+  populateAccom(conf);
+  // Reset accommodation section
+  document.getElementById('accom-content').classList.remove('open');
+  document.querySelector('.accom-toggle-btn').textContent='＋ Add Accommodation';
+  updateAccomTotal();
+
+  document.getElementById('quote-result').classList.add('visible');
+}
+
+function toggleAccom(){
+  const content=document.getElementById('accom-content');
+  const btn=document.querySelector('.accom-toggle-btn');
+  if(content.classList.contains('open')){
+    content.classList.remove('open');btn.textContent='＋ Add Accommodation';
+  } else {
+    content.classList.add('open');btn.textContent='▲ Hide Accommodation';
+  }
+}
+
+function populateAccom(conf){
+  let dealsHtml='';
+  if(conf.confAccomUrl||conf.confAccomNote){
+    dealsHtml=`<div class="conf-rate-banner">CONFERENCE ACCOMMODATION INFO</div>`;
+    if(conf.confAccomNote){dealsHtml+=`<div style="font-size:12px;color:var(--grey-600);margin-bottom:8px;line-height:1.5">${conf.confAccomNote}</div>`;}
+    if(conf.confAccomUrl){dealsHtml+=`<div class="hotel-item"><span class="hotel-name">View conference accommodation page</span><a href="${conf.confAccomUrl}" target="_blank" class="hotel-link">Conference site ↗</a></div>`;}
+  }
+  document.getElementById('conf-accom-deals').innerHTML=dealsHtml;
+
+  let hotelsHtml='<div style="margin-top:8px;margin-bottom:6px;font-size:11px;font-weight:700;color:var(--grey-600);text-transform:uppercase;letter-spacing:.4px">General options near venue</div>';
+  conf.accom.forEach(h=>{
+    const icon=h.src==='booking'?'booking.com':h.src==='hotels'?'hotels.com':'direct link';
+    hotelsHtml+=`<div class="hotel-item"><span class="hotel-name">${h.name}</span><a href="${h.url}" target="_blank" class="hotel-link">${icon} ↗</a></div>`;
+  });
+  document.getElementById('general-accom-hotels').innerHTML=hotelsHtml;
+}
+
+function updateAccomTotal(){
+  const rate=parseFloat(document.getElementById('accom-rate').value)||0;
+  const nights=parseInt(document.getElementById('accom-nights').value)||0;
+  const total=Math.round(rate*nights);
+  document.getElementById('accom-total').textContent='Accommodation total: '+fmtCurrency(total);
+}
+
+function addFlightToTrip(){
+  if(!lastQuote){return;}
+  const {conf,fc,route,qfSC,anzSP,cLow,cHigh,cMid,origin}=lastQuote;
+  addTripItem({confId:conf.id,confName:conf.name,route:`${origin}→${conf.airport}`,fareClass:fc.label,flightCostMid:cMid,flightCostLow:cLow,flightCostHigh:cHigh,qfSC,anzSP,accomCost:0});
+}
+
+function addFlightAndAccomToTrip(){
+  if(!lastQuote){return;}
+  const rate=parseFloat(document.getElementById('accom-rate').value)||0;
+  const nights=parseInt(document.getElementById('accom-nights').value)||0;
+  const accomCost=Math.round(rate*nights);
+  const {conf,fc,route,qfSC,anzSP,cLow,cHigh,cMid,origin}=lastQuote;
+  addTripItem({confId:conf.id,confName:conf.name,route:`${origin}→${conf.airport}`,fareClass:fc.label,flightCostMid:cMid,flightCostLow:cLow,flightCostHigh:cHigh,qfSC,anzSP,accomCost});
+}
+
+function quickAddToTrip(confId){
+  const conf=CONFERENCES.find(c=>c.id===confId);
+  const origin=getOrigin();
+  const route=getRoute(origin,conf.airport);
+  if(!route){alert('No route data from '+origin+' to '+conf.airport+'. Use Quote Mode for a custom estimate.');return;}
+  const fc=FARE_CLASSES[0]; // default to Business J
+  addTripItem({confId:conf.id,confName:conf.name,route:`${origin}→${conf.airport}`,fareClass:fc.label,flightCostMid:Math.round((route.cLow+route.cHigh)/2),flightCostLow:route.cLow,flightCostHigh:route.cHigh,qfSC:route.qfSC,anzSP:route.anzSP,accomCost:0});
+}
+
+function openQuoteForConf(confId){
+  setMode('quote');
+  document.getElementById('q-conference').value=confId;
+  document.getElementById('q-origin').value=getOrigin();
+  updateFareSCRates();
+}
+
+// ══════════════════════════════════════════════════════
+//  TRIP PLANNER / BUDGET
+// ══════════════════════════════════════════════════════
+let tripItemCounter=0;
+function addTripItem(item){
+  if(tripItems.some(t=>t.confId===item.confId)){
+    if(!confirm(item.confName+' is already in your trip. Add another entry?'))return;
+  }
+  item._id=++tripItemCounter;
+  tripItems.push(item);
+  renderTrip();
+  renderCards(); // update card buttons
+}
+
+function removeTripItem(id){
+  tripItems=tripItems.filter(t=>t._id!==id);
+  renderTrip();
+  renderCards();
+}
+
+function renderTrip(){
+  const container=document.getElementById('trip-items');
+  const totals=document.getElementById('sb-totals');
+
+  if(tripItems.length===0){
+    container.innerHTML=`<div class="trip-empty"><div class="empty-icon">🗺️</div><p>Browse conferences and add them to your trip — or use Quote Mode for detailed estimates.</p></div>`;
+    totals.classList.add('hidden');
+    updateStatusBars(0,0);
+    updateBudgetBar(0);
+    return;
+  }
+  totals.classList.remove('hidden');
+
+  let totalFlights=0,totalAccom=0,totalQF=0,totalANZ=0;
+  let html='';
+  tripItems.forEach(item=>{
+    totalFlights+=item.flightCostMid;
+    totalAccom+=item.accomCost||0;
+    totalQF+=item.qfSC;
+    totalANZ+=item.anzSP;
+    const total=item.flightCostMid+(item.accomCost||0);
+    const overBudget=total>budget;
+    html+=`<div class="trip-item">
+      <div class="trip-item-header">
+        <div class="trip-item-name">${item.confName}</div>
+        <button class="trip-item-remove" onclick="removeTripItem(${item._id})" title="Remove">×</button>
+      </div>
+      <div class="trip-item-detail">${item.route} — ${item.fareClass}</div>
+      ${item.accomCost?`<div class="trip-item-detail">Accommodation: ${fmtCurrency(item.accomCost)}</div>`:''}
+      <div class="trip-item-costs">
+        <span class="trip-cost-pill">Flights: ~${fmtCurrency(item.flightCostLow)}–${fmtCurrency(item.flightCostHigh)}</span>
+        <span class="trip-cost-pill sc status-only">${item.qfSC} QF SCs</span>
+        <span class="trip-cost-pill status-only">~${item.anzSP} Air NZ SPs</span>
+        ${item.accomCost?`<span class="trip-cost-pill">Trip total: ${fmtCurrency(total)}</span>`:''}
+      </div>
+    </div>`;
+  });
+  container.innerHTML=html;
+
+  const grandTotal=totalFlights+totalAccom;
+  const over=grandTotal>budget;
+  document.getElementById('sb-flights-cost').textContent='~'+fmtCurrency(totalFlights);
+  document.getElementById('sb-accom-cost').textContent=fmtCurrency(totalAccom);
+  document.getElementById('sb-total-cost').textContent='~'+fmtCurrency(grandTotal);
+  const overRow=document.getElementById('sb-over-row');
+  if(over){
+    overRow.style.display='flex';
+    document.getElementById('sb-over-amt').textContent=fmtCurrency(grandTotal-budget);
+  } else {overRow.style.display='none';}
+
+  updateStatusBars(totalQF,totalANZ);
+  updateBudgetBar(grandTotal);
+}
+
+function updateBudgetBar(spent){
+  const pct=Math.min(Math.round(spent/budget*100),100);
+  const over=spent>budget;
+  const bar=document.getElementById('sb-budget-bar');
+  bar.style.width=pct+'%';
+  bar.classList.toggle('over',over);
+  const rem=budget-spent;
+  const remEl=document.getElementById('sb-budget-remaining');
+  remEl.innerHTML=`<span>Spent: <strong>~${fmtCurrency(spent)}</strong></span><span style="color:${over?'#fca5a5':'rgba(255,255,255,.7)'}">Left: <strong>${over?'−':''}${fmtCurrency(Math.abs(rem))}</strong></span>`;
+  remEl.classList.toggle('over',over);
+}
+
+function updateStatusBars(qf,anz){
+  const qfPct=Math.min(Math.round(qf/700*100),100);
+  const anzPct=Math.min(Math.round(anz/900*100),100);
+  document.getElementById('sp-qf-bar').style.width=qfPct+'%';
+  document.getElementById('sp-anz-bar').style.width=anzPct+'%';
+  document.getElementById('sp-qf-pct').textContent=qfPct+'%';
+  document.getElementById('sp-anz-pct').textContent=anzPct+'%';
+  document.getElementById('sp-qf-count').textContent=qf;
+  document.getElementById('sp-anz-count').textContent=anz;
+  document.getElementById('qf-gold-banner').classList.toggle('hidden',qf<700);
+  document.getElementById('anz-gold-banner').classList.toggle('hidden',anz<900);
+}
+
+// ══════════════════════════════════════════════════════
+//  BUDGET CONTROLS
+// ══════════════════════════════════════════════════════
+function onBudgetChange(){
+  const v=parseInt(document.getElementById('budget-input').value)||9000;
+  budget=Math.max(1000,Math.min(v,100000));
+  document.getElementById('budget-slider').value=Math.min(budget,25000);
+  document.getElementById('sb-budget-display').textContent=fmtCurrency(budget);
+  renderTrip();
+}
+function onBudgetSlider(){
+  const v=parseInt(document.getElementById('budget-slider').value);
+  budget=v;
+  document.getElementById('budget-input').value=v;
+  document.getElementById('sb-budget-display').textContent=fmtCurrency(budget);
+  renderTrip();
+}
+
+// ══════════════════════════════════════════════════════
+//  MODE TOGGLE
+// ══════════════════════════════════════════════════════
+function setMode(mode){
+  document.getElementById('browse-mode').style.display=mode==='browse'?'block':'none';
+  document.getElementById('quote-mode').style.display=mode==='quote'?'block':'none';
+  document.getElementById('calendar-mode').style.display=mode==='calendar'?'block':'none';
+  document.getElementById('btn-browse').classList.toggle('active',mode==='browse');
+  document.getElementById('btn-quote').classList.toggle('active',mode==='quote');
+  document.getElementById('btn-calendar').classList.toggle('active',mode==='calendar');
+  if(mode==='calendar') renderCalendar();
+}
+
+// ══════════════════════════════════════════════════════
+//  CALENDAR VIEW
+// ══════════════════════════════════════════════════════
+function calDayOffset(dateStr, year){
+  const d=new Date(dateStr+'T00:00:00');
+  const jan1=new Date(year,0,1);
+  return Math.floor((d-jan1)/86400000);
+}
+function calPct(day,total){
+  return (Math.max(0,Math.min(day,total))/total*100).toFixed(3)+'%';
+}
+function calAddDays(dateStr,n){
+  const d=new Date(dateStr+'T00:00:00');
+  d.setDate(d.getDate()+n);
+  return d.toLocaleDateString('en-NZ',{day:'numeric',month:'short'});
+}
+function calAddDaysISO(dateStr,n){
+  const d=new Date(dateStr+'T00:00:00');
+  d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+
+function renderCalendar(){
+  const year=parseInt(document.getElementById('cal-year').value)||2026;
+  const catFilter=document.getElementById('cal-cat-filter').value;
+  const origin=document.getElementById('cal-origin').value||'AKL';
+  const isLeap=(year%4===0&&year%100!==0)||year%400===0;
+  const totalDays=isLeap?366:365;
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthDays=[31,isLeap?29:28,31,30,31,30,31,31,30,31,30,31];
+
+  // Month header cells + divider lines
+  let monthHtml='';
+  let divHtml='';
+  let dayCount=0;
+  for(let m=0;m<12;m++){
+    const lft=(dayCount/totalDays*100).toFixed(3)+'%';
+    const wid=(monthDays[m]/totalDays*100).toFixed(3)+'%';
+    monthHtml+=`<div class="cal-month-cell" style="left:${lft};width:${wid}">${monthNames[m]}</div>`;
+    if(m>0) divHtml+=`<div class="cal-month-div" style="left:${lft}"></div>`;
+    dayCount+=monthDays[m];
+  }
+  document.getElementById('cal-month-header').innerHTML=monthHtml;
+
+  // Conferences for this year
+  const tripIds=new Set(tripItems.map(t=>t.confId));
+  const confs=CONFERENCES
+    .filter(c=>!c.virtual)
+    .filter(c=>{const sy=parseInt(c.startDate.slice(0,4)),ey=parseInt((c.endDate||c.startDate).slice(0,4));return sy===year||ey===year;})
+    .filter(c=>!catFilter||c.category===catFilter)
+    .sort((a,b)=>a.startDate.localeCompare(b.startDate));
+
+  if(confs.length===0){
+    document.getElementById('cal-rows').innerHTML=`<div class="cal-empty">No conferences match this filter for ${year}.</div>`;
+    return;
+  }
+
+  let rowsHtml='';
+  confs.forEach(c=>{
+    const endDate=c.endDate||c.startDate;
+    const sd=calDayOffset(c.startDate,year);
+    const ed=calDayOffset(endDate,year);
+    const flOutDay=sd-1;
+    const flRetDay=ed+1;
+    const confDur=Math.max(ed-sd+1,1);
+    const inTrip=tripIds.has(c.id);
+    const route=ROUTES[`${origin}-${c.airport}`]||null;
+
+    // Positions — flight-out and flight-ret clamped so they don't go off screen
+    const flOutL=(Math.max(flOutDay,0)/totalDays*100).toFixed(3)+'%';
+    const flW=(1/totalDays*100).toFixed(3)+'%';
+    const confL=(Math.max(sd,0)/totalDays*100).toFixed(3)+'%';
+    const confW=(confDur/totalDays*100).toFixed(3)+'%';
+    const flRetL=(Math.min(flRetDay,totalDays-1)/totalDays*100).toFixed(3)+'%';
+
+    const confShort=c.name.length>22?c.name.slice(0,20)+'…':c.name;
+    const inTripClass=inTrip?' in-trip':'';
+    const inTripBadge=inTrip?'<span class="cal-label-badge">✈ In Trip</span>':'';
+
+    const flOutVisible=flOutDay>=-1&&flOutDay<totalDays;
+    const flRetVisible=flRetDay>=0&&flRetDay<=totalDays+1;
+    const accomBar=inTrip?`<div class="cal-ev cal-accom" style="left:${confL};width:${confW}" onclick="showCalAccomModal('${c.id}')" title="Accommodation — click to view options">🏨 Accom</div>`:'';
+
+    rowsHtml+=`
+<div class="cal-row${inTripClass}">
+  <div class="cal-row-label">
+    <div class="cal-label-name" title="${c.name}">${c.name}</div>
+    <div class="cal-label-city">📍 ${c.city}</div>
+    ${inTripBadge}
+  </div>
+  <div class="cal-track">
+    ${divHtml}
+    ${flOutVisible?`<div class="cal-ev cal-flight-out" style="left:${flOutL};width:${flW}" onclick="showCalFlightModal('${c.id}','${origin}')" title="Fly out ${calAddDays(c.startDate,-1)} — click to book">✈</div>`:''}
+    <div class="cal-ev cal-conf" style="left:${confL};width:${confW}" onclick="showCalConfModal('${c.id}','${origin}')" title="${c.name} · ${c.city}">${confShort}</div>
+    ${flRetVisible?`<div class="cal-ev cal-flight-ret" style="left:${flRetL};width:${flW}" onclick="showCalFlightModal('${c.id}','${origin}')" title="Return ${calAddDays(endDate,1)} — click to book">↩</div>`:''}
+    ${accomBar}
+  </div>
+</div>`;
+  });
+  document.getElementById('cal-rows').innerHTML=rowsHtml;
+}
+
+function showCalFlightModal(confId, origin){
+  const c=CONFERENCES.find(x=>x.id===confId);
+  if(!c||!c.airport){return;}
+  const endDate=c.endDate||c.startDate;
+  const links=buildFlightLinks(origin,c.airport,c.startDate,endDate);
+  const route=ROUTES[`${origin}-${c.airport}`]||null;
+  const flyOut=calAddDays(c.startDate,-1);
+  const flyRet=calAddDays(endDate,1);
+  const costNote=route?`<div class="cal-modal-note">Est. <strong>${fmtCurrency(route.cLow)}–${fmtCurrency(route.cHigh)}</strong> return · ${route.hrs}h · <span class="status-only">${route.qfSC} QF SCs Business · ~${route.anzSP} Air NZ SPs</span></div>`:'';
+  document.getElementById('cal-modal-body').innerHTML=`
+    <div class="cal-modal-title">✈ Flights — ${c.name}</div>
+    <div class="cal-modal-sub">📍 ${c.city} &nbsp;|&nbsp; Fly out: <strong>${flyOut}</strong> &nbsp;↩ Return: <strong>${flyRet}</strong></div>
+    ${costNote}
+    <div class="cal-modal-links" style="margin-top:12px">
+      <a href="${links.skyscanner}" target="_blank" class="btn btn-outline btn-sm">Skyscanner ↗</a>
+      <a href="${links.google}" target="_blank" class="btn btn-outline btn-sm">Google Flights ↗</a>
+      <a href="${links.webjet}" target="_blank" class="btn btn-outline btn-sm">Webjet ↗</a>
+      <a href="${links.airnz}" target="_blank" class="btn btn-outline btn-sm">Air NZ ↗</a>
+      <a href="${links.qantas}" target="_blank" class="btn btn-outline btn-sm">Qantas ↗</a>
+    </div>`;
+  document.getElementById('cal-modal').style.display='flex';
+}
+
+function showCalConfModal(confId, origin){
+  const c=CONFERENCES.find(x=>x.id===confId);
+  if(!c) return;
+  const endDate=c.endDate||c.startDate;
+  const dateStr=formatDateRange(c.startDate,endDate);
+  const descShort=c.desc?(c.desc.length>180?c.desc.slice(0,178)+'…':c.desc):'';
+  document.getElementById('cal-modal-body').innerHTML=`
+    <div class="cal-modal-title">${c.name}</div>
+    <div class="cal-modal-sub">📍 ${c.city} &nbsp;|&nbsp; 📅 ${dateStr}</div>
+    ${descShort?`<p style="font-size:11px;color:var(--grey-600);margin:0 0 12px;line-height:1.5">${descShort}</p>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="${c.url}" target="_blank" class="btn btn-outline btn-sm">Conference site ↗</a>
+      <button class="btn btn-primary btn-sm" onclick="showCalFlightModal('${c.id}','${origin}')">✈ Flights</button>
+      <button class="btn btn-outline btn-sm" onclick="openQuoteForConf('${c.id}');setMode('quote');closeCalModal()">✦ Get Quote</button>
+    </div>`;
+  document.getElementById('cal-modal').style.display='flex';
+}
+
+function showCalAccomModal(confId){
+  const c=CONFERENCES.find(x=>x.id===confId);
+  if(!c) return;
+  document.getElementById('cal-modal-body').innerHTML=`
+    <div class="cal-modal-title">🏨 Accommodation — ${c.name}</div>
+    <div class="cal-modal-sub">📍 ${c.city} &nbsp;|&nbsp; 📅 ${formatDateRange(c.startDate,c.endDate||c.startDate)}</div>
+    <div class="cal-modal-note">Use Quote Mode to calculate accommodation costs and add them to your trip planner budget.</div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="openQuoteForConf('${c.id}');setMode('quote');closeCalModal()">Open in Quote Mode →</button>
+    </div>`;
+  document.getElementById('cal-modal').style.display='flex';
+}
+
+function closeCalModal(){
+  document.getElementById('cal-modal').style.display='none';
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  renderCards();
+  populateQuoteConferences();
+  updateFareSCRates();
+  document.getElementById('sb-budget-display').textContent=fmtCurrency(budget);
+  // Sync origin selectors
+  document.getElementById('q-origin').value='AKL';
+});
+</script>
+</body>
+</html>
